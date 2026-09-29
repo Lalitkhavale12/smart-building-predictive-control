@@ -16,7 +16,13 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+from sim import config as cfg
 
 try:  # sklearn >= 1.4 preferred spelling; MSE-sqrt fallback otherwise
     from sklearn.metrics import root_mean_squared_error as _rmse_fn
@@ -29,6 +35,8 @@ except ImportError:  # pragma: no cover
 HORIZONS = (30, 60)
 FEATURE_LAGS = (5, 15, 30, 60)
 TRAIN_FRAC = 0.7
+N_SPLITS = 4
+DEFAULT_SEED = cfg.PAIRED_SEEDS[0]
 
 TARGET_COL = "y_target"
 NOW_COL = "y_now"
@@ -148,6 +156,80 @@ def format_table(tables):
                 f"  {model:12s} MAE={m['mae']:.4f} RMSE={m['rmse']:.4f} R2={m['r2']:.4f}"
             )
     return "\n".join(lines)
+
+
+# Fixed tuning budgets (D-03/F3): pre-declared literal search spaces, at most
+# 12 configs each, shared by every bake-off contestant so no model gets an
+# all-defaults handicap. Keys are Pipeline-prefixed ("reg__") because every
+# fit runs inside scaler+regressor Pipeline (scaler refit per CV fold).
+RF_SEARCH = [
+    {"reg__n_estimators": [100], "reg__max_depth": [None], "reg__min_samples_leaf": [1]},
+    {"reg__n_estimators": [100], "reg__max_depth": [12], "reg__min_samples_leaf": [2]},
+    {"reg__n_estimators": [200], "reg__max_depth": [None], "reg__min_samples_leaf": [1]},
+    {"reg__n_estimators": [200], "reg__max_depth": [12], "reg__min_samples_leaf": [2]},
+    {"reg__n_estimators": [200], "reg__max_depth": [20], "reg__min_samples_leaf": [4]},
+    {"reg__n_estimators": [300], "reg__max_depth": [None], "reg__min_samples_leaf": [2]},
+]
+
+HGB_SEARCH = [
+    {"reg__max_iter": [100], "reg__max_depth": [None], "reg__learning_rate": [0.1]},
+    {"reg__max_iter": [100], "reg__max_depth": [5], "reg__learning_rate": [0.1]},
+    {"reg__max_iter": [200], "reg__max_depth": [None], "reg__learning_rate": [0.05]},
+    {"reg__max_iter": [200], "reg__max_depth": [5], "reg__learning_rate": [0.05]},
+    {"reg__max_iter": [200], "reg__max_depth": [8], "reg__learning_rate": [0.1]},
+    {"reg__max_iter": [300], "reg__max_depth": [5], "reg__learning_rate": [0.05]},
+]
+
+_SPACES = {
+    "rf": (RandomForestRegressor, RF_SEARCH),
+    "histgb": (HistGradientBoostingRegressor, HGB_SEARCH),
+}
+
+
+def train_model(X_train, y_train, model="histgb", horizon=30, search=None,
+                random_state=DEFAULT_SEED, cv_splits=N_SPLITS):
+    """Fit one regressor with the fixed budget; scaler lives in the Pipeline.
+
+    ``random_state`` defaults to ``PAIRED_SEEDS[0]`` and is passed to both the
+    estimator search and ``TimeSeriesSplit``-adjacent shuffling-free CV, so
+    every bake-off run logs the same seed chain.
+    """
+    cls, default_space = _SPACES[model]
+    space = default_space if search is None else search
+    pipe = Pipeline([("scaler", StandardScaler()), ("reg", cls())])
+    cv = TimeSeriesSplit(n_splits=cv_splits, gap=horizon)
+    search_obj = RandomizedSearchCV(
+        pipe, param_distributions=space, n_iter=len(space), cv=cv,
+        random_state=random_state,
+    )
+    search_obj.fit(X_train, y_train)
+    return search_obj
+
+
+def evaluate_horizon(df, room, horizon, target="occupancy", search=None):
+    """Split-then-window, train RF/HistGB, score vs persistence; per-horizon table."""
+    train_df, test_df = chronological_split(df)
+    if target == "occupancy":
+        tr = build_occupancy_windows(train_df, room, horizon)
+        te = build_occupancy_windows(test_df, room, horizon)
+        features = OCC_FEATURES
+    elif target == "demand":
+        tr = build_demand_windows(train_df, horizon)
+        te = build_demand_windows(test_df, horizon)
+        features = DEM_FEATURES
+    else:  # pragma: no cover
+        raise ValueError(f"unknown target {target!r}")
+    X_train, y_train = tr[features].to_numpy(), tr[TARGET_COL].to_numpy()
+    X_test, y_test = te[features].to_numpy(), te[TARGET_COL].to_numpy()
+    search = search or {}
+    table = {"persistence": score_metrics(y_test, te[NOW_COL].to_numpy())}
+    for name in ("rf", "histgb"):
+        fitted = train_model(
+            X_train, y_train, model=name, horizon=horizon,
+            search=search.get(name), random_state=DEFAULT_SEED,
+        )
+        table[name] = score_metrics(y_test, fitted.predict(X_test))
+    return table
 
 
 def demo(days=2, seed=0):

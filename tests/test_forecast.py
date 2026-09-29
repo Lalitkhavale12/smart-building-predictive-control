@@ -55,3 +55,45 @@ def test_persistence_metrics_present():
         metrics = fc.score_metrics(occ[fc.TARGET_COL], fc.persistence_predict(occ))
         assert set(metrics) == {"mae", "rmse", "r2"}
         assert metrics["mae"] >= 0 and metrics["rmse"] >= 0
+
+
+TINY_SEARCH = {
+    "rf": [{"reg__n_estimators": [10], "reg__max_depth": [4], "reg__min_samples_leaf": [2]}],
+    "histgb": [{"reg__max_iter": [10], "reg__max_depth": [3], "reg__learning_rate": [0.1]}],
+}
+
+
+def test_persistence_baseline_present():
+    """Every results table carries persistence MAE/RMSE/R2 next to RF/HistGB."""
+    frame = _frame()
+    for horizon in fc.HORIZONS:
+        for target in ("occupancy", "demand"):
+            table = fc.evaluate_horizon(
+                frame, "classroom_A", horizon, target=target, search=TINY_SEARCH
+            )
+            assert set(table) == {"persistence", "rf", "histgb"}
+            for row in table.values():
+                assert set(row) == {"mae", "rmse", "r2"}
+
+
+def test_search_budget_fixed():
+    """Search spaces are committed literals (<=12 configs) on a scaler Pipeline."""
+    import inspect
+
+    for space in (fc.RF_SEARCH, fc.HGB_SEARCH):
+        assert isinstance(space, list) and 1 <= len(space) <= 12
+        assert all(isinstance(cfg, dict) for cfg in space)
+    assert inspect.signature(fc.train_model).parameters["random_state"].default == 0
+    assert "RandomizedSearchCV" in inspect.getsource(fc.train_model)
+    frame = _frame()
+    train_df, _ = fc.chronological_split(frame)
+    windows = fc.build_occupancy_windows(train_df, "classroom_A", 30)
+    fitted = fc.train_model(
+        windows[fc.OCC_FEATURES].to_numpy()[:500],
+        windows[fc.TARGET_COL].to_numpy()[:500],
+        model="histgb",
+        horizon=30,
+        search=TINY_SEARCH["histgb"],
+    )
+    # Scaler is inside the Pipeline: fit touches train data only, refit per fold.
+    assert "scaler" in fitted.best_estimator_.named_steps
