@@ -1,10 +1,16 @@
-"""Harness + C3 tracer tests (Phase 3 plan 02, D-05/D-06/D-07/D-13)."""
+"""Harness + C3 tracer tests (Phase 3 plan 02, D-05/D-06/D-07/D-08/D-13)."""
+
+import pathlib
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from ctrl.baselines import OccupancyRulePolicy, SetbackPolicy
+from ctrl.baselines import (
+    FixedSchedulePolicy,
+    OccupancyRulePolicy,
+    SetbackPolicy,
+)
 from ctrl.harness import run_controller
 from sim import config as cfg
 from sim.logger import TELEMETRY_COLUMNS
@@ -43,3 +49,32 @@ def test_c3_off_after_60min_vacancy_and_on_when_occupied():
         hvac = policy.step(_obs(0))["lab"]["hvac"]
     assert hvac == "OFF"
     assert policy.step(_obs(3))["lab"]["hvac"] == "ON"  # reoccupancy resets
+
+
+@pytest.mark.parametrize("factory", [
+    lambda scenario: FixedSchedulePolicy(scenario=scenario),
+    lambda scenario: OccupancyRulePolicy(),
+    lambda scenario: SetbackPolicy(),
+], ids=["c1", "c2", "c3"])
+def test_rerun_byte_identical(factory):
+    """Same seed + controller → DataFrame.equals AND byte-identical CSV text."""
+    frame_a, _ = run_controller(factory("weekday"), "weekday", 2)
+    frame_b, _ = run_controller(factory("weekday"), "weekday", 2)
+    assert frame_a.equals(frame_b)
+    csv_a = frame_a.to_csv(index=False, float_format="%.4f")
+    csv_b = frame_b.to_csv(index=False, float_format="%.4f")
+    assert csv_a.encode() == csv_b.encode()
+
+
+def test_no_scalar_carbon_constant_in_ctrl():
+    """Carbon/cost come only from grid.hourly_rows() — never a scalar in ctrl/."""
+    import re
+
+    pattern = re.compile(r"EMISSION_FACTOR|EF_KG|0\.710")
+    hits = [
+        (path.name, lineno, line.strip())
+        for path in sorted(pathlib.Path("ctrl").glob("*.py"))
+        for lineno, line in enumerate(path.read_text().splitlines(), 1)
+        if pattern.search(line)
+    ]
+    assert hits == [], f"scalar emission constant in ctrl/: {hits}"
