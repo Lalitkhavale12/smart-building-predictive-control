@@ -75,35 +75,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIM-01 | TBD | Pending |
-| SIM-02 | TBD | Pending |
-| SIM-03 | TBD | Pending |
-| SIM-04 | TBD | Pending |
-| IOT-01 | TBD | Pending |
-| IOT-02 | TBD | Pending |
-| IOT-03 | TBD | Pending |
-| IOT-04 | TBD | Pending |
-| FOR-01 | TBD | Pending |
-| FOR-02 | TBD | Pending |
-| FOR-03 | TBD | Pending |
-| FOR-04 | TBD | Pending |
-| CTL-01 | TBD | Pending |
-| CTL-02 | TBD | Pending |
-| CTL-03 | TBD | Pending |
-| CTL-04 | TBD | Pending |
-| CTL-05 | TBD | Pending |
-| CTL-06 | TBD | Pending |
-| EVAL-01 | TBD | Pending |
-| EVAL-02 | TBD | Pending |
-| EVAL-03 | TBD | Pending |
-| EVAL-04 | TBD | Pending |
-| DASH-01 | TBD | Pending |
-| DASH-02 | TBD | Pending |
+| SIM-01 | Phase 1 | Pending |
+| SIM-02 | Phase 1 | Pending |
+| SIM-03 | Phase 1 | Pending |
+| SIM-04 | Phase 1 | Pending |
+| IOT-01 | Phase 2 | Pending |
+| IOT-02 | Phase 2 | Pending |
+| IOT-03 | Phase 2 | Pending |
+| IOT-04 | Phase 2 | Pending |
+| FOR-01 | Phase 4 | Pending |
+| FOR-02 | Phase 4 | Pending |
+| FOR-03 | Phase 4 | Pending |
+| FOR-04 | Phase 4 | Pending |
+| CTL-01 | Phase 3 | Pending |
+| CTL-02 | Phase 3 | Pending |
+| CTL-03 | Phase 3 | Pending |
+| CTL-04 | Phase 4 | Pending |
+| CTL-05 | Phase 5 | Pending |
+| CTL-06 | Phase 5 | Pending |
+| EVAL-01 | Phase 5 | Pending |
+| EVAL-02 | Phase 5 | Pending |
+| EVAL-03 | Phase 5 | Pending |
+| EVAL-04 | Phase 5 | Pending |
+| DASH-01 | Phase 6 | Pending |
+| DASH-02 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 0
-- Unmapped: 24 ⚠️
+- Mapped to phases: 24
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-29*
