@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 0
 current_phase_name: Phase 1 ready to plan
 status: planning
-stopped_at: Phase 1 executed and verified PASS (27 tests green)
-last_updated: "2026-09-29T12:55:35.755Z"
+stopped_at: Phase 2 plan 02 executed (node shim + bridge loop + sketch + faults, 11 tests green)
+last_updated: "2026-09-29T14:05:00Z"
 last_activity: 2026-09-29
-last_activity_desc: Roadmap created (6 phases, 24/24 requirements mapped)
+last_activity_desc: Phase 2 plan 02 complete (IOT-01, IOT-02, IOT-04 pipeline slice proven brokerless)
 state_head: 954744222b06b6d4341e1505049a0acced252f0a
 progress:
   total_phases: 6
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-09-29)
 
 ## Current Position
 
-Phase: 1 of 6 (Phase 1 complete, Phase 2 ready to discuss)
-Plan: 3 of 3 in Phase 1
-Status: Phase 1 complete, verified PASS
-Last activity: 2026-09-29 — Roadmap created (6 phases, 24/24 requirements mapped)
+Phase: 2 of 6 (Phase 1 complete, Phase 2 plan 02 complete)
+Plan: 2 of TBD in Phase 2
+Status: Phase 2 in progress — pipeline vertical slice proven, controller hookup unblocked
+Last activity: 2026-09-29 — Phase 2 plan 02 complete (node shim + bridge + sketch + faults)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -84,6 +84,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T12:55:35.723Z
-Stopped at: Phase 1 executed and verified PASS (27 tests green)
-Resume file: .planning/phases/01-simulator-evaluation-foundation/01-VERIFICATION.md
+Last session: 2026-09-29T14:05:00Z
+Stopped at: Phase 2 plan 02 executed (node shim + bridge loop + sketch + faults, 11 tests green)
+Resume file: .planning/phases/02-mqtt-pipeline-iot-contract/02-02-SUMMARY.md
