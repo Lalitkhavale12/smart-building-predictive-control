@@ -79,10 +79,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SIM-02 | Phase 1 | Pending |
 | SIM-03 | Phase 1 | Pending |
 | SIM-04 | Phase 1 | Pending |
-| IOT-01 | Phase 2 | Pending |
-| IOT-02 | Phase 2 | Pending |
-| IOT-03 | Phase 2 | Pending |
-| IOT-04 | Phase 2 | Pending |
+| IOT-01 | Phase 2 | Complete |
+| IOT-02 | Phase 2 | Complete |
+| IOT-03 | Phase 2 | Complete |
+| IOT-04 | Phase 2 | Complete |
 | FOR-01 | Phase 4 | Pending |
 | FOR-02 | Phase 4 | Pending |
 | FOR-03 | Phase 4 | Pending |

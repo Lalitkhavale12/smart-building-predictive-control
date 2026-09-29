@@ -13,6 +13,7 @@ Predict occupancy ahead to cut energy, cost and CO2 while keeping occupied rooms
 ### Validated
 
 - ✓ Seeded multi-room RC-thermal simulator with CSV logging, comfort metric, hourly carbon/ToU series — Phase 1 (27 tests green, verified PASS)
+- ✓ IoT pipeline: virtual ESP32 shim → MQTT (topics.py contract, QoS1 commands, LWT) → bridge → dashboard-ready — Phase 2 (51 passed, verified PASS)
 
 ### Active
 
