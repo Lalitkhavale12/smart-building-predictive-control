@@ -3,6 +3,7 @@
 import numpy as np
 
 from ctrl.baselines import FixedSchedulePolicy, OccupancyRulePolicy
+from ctrl.schedules import is_on
 from sim import config as cfg
 from sim import metrics
 from sim.policy import AlwaysOffPolicy
@@ -71,3 +72,35 @@ def test_c2_reads_no_timetable():
 
     src = pathlib.Path("ctrl/baselines.py").read_text()
     assert "TIMETABLES" not in src
+
+
+def test_is_on_classroom_weekday_boundaries():
+    assert is_on("classroom_A", 8 * 60, "weekday") is True
+    assert is_on("classroom_A", 18 * 60 - 1, "weekday") is True
+    assert is_on("classroom_A", 18 * 60, "weekday") is False
+
+
+def test_is_on_weekend_mostly_off():
+    assert is_on("classroom_A", 10 * 60, "weekend") is True
+    assert is_on("classroom_A", 14 * 60, "weekend") is False
+    for room in ("classroom_B", "office", "lab"):
+        assert is_on(room, 12 * 60, "weekend") is False
+
+
+def test_is_on_lab_evening_and_gap():
+    assert is_on("lab", 18 * 60 + 30, "weekday") is True  # evening block
+    assert is_on("lab", 14 * 60 + 30, "weekday") is False  # mid gap
+
+
+def test_is_on_heatwave_matches_weekday():
+    for room in ("classroom_A", "classroom_B", "office", "lab"):
+        for minute in (0, 8 * 60, 12 * 60, 18 * 60 + 30, 23 * 60):
+            assert is_on(room, minute, "heatwave") == is_on(
+                room, minute, "weekday"
+            )
+
+
+def test_c1_weekend_energy_below_weekday():
+    weekend = run_day(FixedSchedulePolicy(scenario="weekend"), "weekend", 0)
+    weekday = run_day(FixedSchedulePolicy(scenario="weekday"), "weekday", 0)
+    assert weekend < weekday
