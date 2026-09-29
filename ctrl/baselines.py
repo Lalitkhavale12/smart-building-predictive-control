@@ -1,4 +1,4 @@
-"""C1 fixed-schedule + C2 occupancy-rule baselines (CTL-01/CTL-02)."""
+"""C1 fixed-schedule + C2 occupancy-rule + C3 setback baselines (CTL-01/02/03)."""
 
 from sim import config as cfg
 from sim.policy import BasePolicy
@@ -58,6 +58,48 @@ class OccupancyRulePolicy(BasePolicy):
                     self._empty_min.get(room, 0) + cfg.CONTROL_HOOK_STEPS
                 )
                 hvac = "OFF" if self._empty_min[room] >= self.vacancy_min else "ON"
+            action[room] = {
+                "hvac": hvac,
+                "light": 1 if obs[room]["occupancy"] > 0 else 0,
+            }
+        return action
+
+
+class SetbackPolicy(BasePolicy):
+    """C3: setback — REDUCED for the first ``setback_min`` empty minutes, OFF after (D-05/D-06).
+
+    Identical vacancy tracking to C2 (sim-minute counter, ``vacancy_min=15``
+    default): empty < vacancy_min → ON (hold); vacancy_min ≤ empty <
+    setback_min → REDUCED; empty ≥ setback_min → OFF; occupied → ON.
+
+    The 60-min setback is grounded in room tau ~3.6 h (BASE_TAU_HOURS): one
+    hour of REDUCED (-1.2 kW vs ON -3.5 kW, ~1/3 capacity) holds the room
+    within fast-recovery reach of the comfort band, while OFF lets it drift.
+    Reads only current ``obs`` occupancy; lights follow current occupancy.
+    """
+
+    def __init__(self, vacancy_min=15, setback_min=60):
+        self.vacancy_min = vacancy_min
+        self.setback_min = setback_min
+        self._empty_min = {}
+
+    def step(self, obs, forecast=None, signals=None):
+        action = {}
+        for room in obs:
+            if obs[room]["occupancy"] > 0:
+                self._empty_min[room] = 0
+                hvac = "ON"
+            else:
+                self._empty_min[room] = (
+                    self._empty_min.get(room, 0) + cfg.CONTROL_HOOK_STEPS
+                )
+                empty = self._empty_min[room]
+                if empty >= self.setback_min:
+                    hvac = "OFF"
+                elif empty >= self.vacancy_min:
+                    hvac = "REDUCED"
+                else:
+                    hvac = "ON"
             action[room] = {
                 "hvac": hvac,
                 "light": 1 if obs[room]["occupancy"] > 0 else 0,
