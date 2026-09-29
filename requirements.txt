@@ -6,3 +6,7 @@ matplotlib==3.10.7
 pytest==8.*
 # Phase 2 pin — MQTT client (lazy import in iot/mqtt_client.py; unit tests run without it).
 paho-mqtt==2.1.0
+# Phase 4 pin — forecasting baselines (RF/HistGB/TimeSeriesSplit, verified installed 1.8.0).
+# NOTE: STACK.md's Python-3.12 pin is stale — TF 2.22.0-rc0 imports on Python 3.14.6
+# (research F9 tension note); the full tensorflow pin lands in 04-02 with the LSTM.
+scikit-learn==1.8.0

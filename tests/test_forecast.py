@@ -76,6 +76,30 @@ def test_persistence_baseline_present():
                 assert set(row) == {"mae", "rmse", "r2"}
 
 
+def test_no_shuffle_regression():
+    """Layer-2 guard: grep-gate forbids random splits in ml/ (D-07).
+
+    Patterns are built from fragments so this file never trips its own gate.
+    """
+    import pathlib
+    import re
+
+    tok_shuffle = "shuf" + "fle=True"
+    tok_split = "train_" + "test_split"
+    tok_allowed = "shuf" + "fle=False"
+    pat_shuffle = re.compile(re.escape(tok_shuffle))
+    pat_split = re.compile(re.escape(tok_split))
+    bad_shuffle, bad_split = [], []
+    for path in sorted(pathlib.Path("ml").glob("*.py")):
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            if pat_shuffle.search(line):
+                bad_shuffle.append((path.name, lineno, line.strip()))
+            if pat_split.search(line) and tok_allowed not in line:
+                bad_split.append((path.name, lineno, line.strip()))
+    assert bad_shuffle == [], f"random split in ml/: {bad_shuffle}"
+    assert bad_split == [], f"unshuffled-split call without opt-out in ml/: {bad_split}"
+
+
 def test_search_budget_fixed():
     """Search spaces are committed literals (<=12 configs) on a scaler Pipeline."""
     import inspect
