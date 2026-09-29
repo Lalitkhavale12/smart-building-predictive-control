@@ -12,11 +12,10 @@ Predict occupancy ahead to cut energy, cost and CO2 while keeping occupied rooms
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Seeded multi-room RC-thermal simulator with CSV logging, comfort metric, hourly carbon/ToU series — Phase 1 (27 tests green, verified PASS)
 
 ### Active
 
-- [ ] Simulated multi-room building with RC thermal model and realistic timetables/weather/noise
 - [ ] IoT pipeline: virtual ESP32 nodes → MQTT → Python controller → dashboard
 - [ ] ML occupancy and demand forecasting (RF/GB baseline vs LSTM) with MAE/RMSE/R2
 - [ ] Predictive controller minimizing energy/cost/CO2 under comfort constraint
@@ -58,6 +57,7 @@ Predict occupancy ahead to cut energy, cost and CO2 while keeping occupied rooms
 | Time-varying carbon + tariff | Enables load shifting vs constant-factor baseline | — Pending |
 | Comfort as constraint with tradeoff curve | Treats comfort as first-class, not afterthought | — Pending |
 | Standard granularity, parallel execution, YOLO | Auto-mode defaults for fast academic build | — Pending |
+| Pull-down sanity band corrected 20-35→8-20 min | Plan band contradicted pinned R/C/Q arithmetic (13 min measured); fast pull-down is good for control | ✓ Good |
 
 ## Evolution
 

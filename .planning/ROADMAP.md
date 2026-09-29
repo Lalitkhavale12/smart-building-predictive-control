@@ -12,7 +12,7 @@ Physics first, then contract, then dumbest working loop, then intelligence, then
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Simulator + Evaluation Foundation** - Seeded multi-room RC-thermal simulator with CSV logging, comfort metric, and hourly carbon/ToU series
+- [x] **Phase 1: Simulator + Evaluation Foundation** - Seeded multi-room RC-thermal simulator with CSV logging, comfort metric, and hourly carbon/ToU series
 - [ ] **Phase 2: MQTT Pipeline + IoT Contract** - Virtual ESP32 telemetry over MQTT with shared topic contract, QoS1 commands, and fault tolerance
 - [ ] **Phase 3: Baselines + Comparison Harness** - Controllers C1–C3 with eval harness producing the first kWh comparison
 - [ ] **Phase 4: Forecasting + Predictive Controller** - Occupancy/demand forecaster driving predictive controller C4 with forecast ablation
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Simulator + Evaluation Foundation | 0/TBD | Not started | - |
+| 1. Simulator + Evaluation Foundation | 3/3 | ✓ Complete | 2026-09-29 |
 | 2. MQTT Pipeline + IoT Contract | 0/TBD | Not started | - |
 | 3. Baselines + Comparison Harness | 0/TBD | Not started | - |
 | 4. Forecasting + Predictive Controller | 0/TBD | Not started | - |
