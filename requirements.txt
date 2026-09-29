@@ -1,0 +1,6 @@
+# Phase 1 pins — install into a Python 3.12 venv (see README.md).
+# Verified 2026-09-29: all four resolve from PyPI (Package Legitimacy Audit OK).
+numpy==2.4.6
+pandas==2.3.3
+matplotlib==3.10.7
+pytest==8.*
