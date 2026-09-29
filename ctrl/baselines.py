@@ -54,8 +54,12 @@ class OccupancyRulePolicy(BasePolicy):
                 self._empty_min[room] = 0
                 hvac = "ON"
             else:
+                # Unseen rooms default to long-vacant (midnight start = vacant
+                # for hours): first empty observation yields OFF, not a 15-min
+                # hold-ON transient that would penalize low-energy scenarios.
                 self._empty_min[room] = (
-                    self._empty_min.get(room, 0) + cfg.CONTROL_HOOK_STEPS
+                    self._empty_min.get(room, self.vacancy_min)
+                    + cfg.CONTROL_HOOK_STEPS
                 )
                 hvac = "OFF" if self._empty_min[room] >= self.vacancy_min else "ON"
             action[room] = {
@@ -90,8 +94,11 @@ class SetbackPolicy(BasePolicy):
                 self._empty_min[room] = 0
                 hvac = "ON"
             else:
+                # Unseen rooms default to long-vacant (midnight start = vacant
+                # for hours): first empty observation yields OFF, same as C2.
                 self._empty_min[room] = (
-                    self._empty_min.get(room, 0) + cfg.CONTROL_HOOK_STEPS
+                    self._empty_min.get(room, self.setback_min)
+                    + cfg.CONTROL_HOOK_STEPS
                 )
                 empty = self._empty_min[room]
                 if empty >= self.setback_min:
