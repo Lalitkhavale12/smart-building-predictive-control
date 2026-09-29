@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ctrl.baselines import FixedSchedulePolicy
+from ctrl.baselines import FixedSchedulePolicy, OccupancyRulePolicy
 from sim import config as cfg
 from sim import metrics
 from sim.policy import AlwaysOffPolicy
@@ -29,3 +29,45 @@ def test_c1_weekday_seed0_positive_kwh_above_always_off():
     off_kwh = run_day(AlwaysOffPolicy(), "weekday", 0)
     assert c1_kwh > 0
     assert c1_kwh > off_kwh
+
+
+def _obs(occupancy):
+    return {"lab": {"occupancy": occupancy}}
+
+
+def test_c2_flips_off_exactly_after_15_empty_sim_minutes():
+    policy = OccupancyRulePolicy()
+    assert policy.step(_obs(3))["lab"]["hvac"] == "ON"
+    assert policy.step(_obs(0))["lab"]["hvac"] == "ON"  # 5 min
+    assert policy.step(_obs(0))["lab"]["hvac"] == "ON"  # 10 min
+    assert policy.step(_obs(0))["lab"]["hvac"] == "OFF"  # 15 min
+
+
+def test_c2_vacancy_min_5_flips_after_one_empty_call():
+    policy = OccupancyRulePolicy(vacancy_min=5)
+    assert policy.step(_obs(2))["lab"]["hvac"] == "ON"
+    assert policy.step(_obs(0))["lab"]["hvac"] == "OFF"
+
+
+def test_c2_reoccupancy_resets_timer():
+    policy = OccupancyRulePolicy()
+    policy.step(_obs(1))
+    policy.step(_obs(0))  # 5 min
+    policy.step(_obs(0))  # 10 min
+    assert policy.step(_obs(4))["lab"]["hvac"] == "ON"  # reset
+    assert policy.step(_obs(0))["lab"]["hvac"] == "ON"  # 5 min again
+    assert policy.step(_obs(0))["lab"]["hvac"] == "ON"  # 10 min again
+    assert policy.step(_obs(0))["lab"]["hvac"] == "OFF"  # 15 min again
+
+
+def test_c2_lights_follow_current_occupancy():
+    policy = OccupancyRulePolicy()
+    assert policy.step(_obs(2))["lab"]["light"] == 1
+    assert policy.step(_obs(0))["lab"]["light"] == 0
+
+
+def test_c2_reads_no_timetable():
+    import pathlib
+
+    src = pathlib.Path("ctrl/baselines.py").read_text()
+    assert "TIMETABLES" not in src
