@@ -87,9 +87,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOR-02 | Phase 4 | Pending |
 | FOR-03 | Phase 4 | Pending |
 | FOR-04 | Phase 4 | Pending |
-| CTL-01 | Phase 3 | Pending |
-| CTL-02 | Phase 3 | Pending |
-| CTL-03 | Phase 3 | Pending |
+| CTL-01 | Phase 3 | Complete |
+| CTL-02 | Phase 3 | Complete |
+| CTL-03 | Phase 3 | Complete |
 | CTL-04 | Phase 4 | Pending |
 | CTL-05 | Phase 5 | Pending |
 | CTL-06 | Phase 5 | Pending |
