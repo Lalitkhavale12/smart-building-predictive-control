@@ -93,11 +93,18 @@ def main(argv=None):
     if "c3" in controllers and "c4-with" in controllers:
         for scenario in scenarios:
             try:
+                import math as _math
+
                 t, p = paired_ttest(per_run, scenario, "c4-with", "c3")
-                verdict = ("no significant difference" if p > 0.05
-                           else "significant difference")
-                print(f"paired t-test c4-with vs c3 [{scenario}]: "
-                      f"t={t:.3f} p={p:.4f} -> {verdict}")
+                if not _math.isfinite(t):
+                    print(f"paired t-test c4-with vs c3 [{scenario}]: "
+                          f"t non-finite (paired deltas constant across seeds) "
+                          f"p={p:.4f} -> significant difference")
+                else:
+                    verdict = ("no significant difference" if p > 0.05
+                               else "significant difference")
+                    print(f"paired t-test c4-with vs c3 [{scenario}]: "
+                          f"t={t:.3f} p={p:.4f} -> {verdict}")
             except Exception as exc:  # never fail the matrix on stats
                 print(f"paired t-test c4-with vs c3 [{scenario}]: skipped ({exc})")
     elapsed = time.time() - started
