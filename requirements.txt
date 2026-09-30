@@ -10,3 +10,6 @@ paho-mqtt==2.1.0
 # NOTE: STACK.md's Python-3.12 pin is stale — TF 2.22.0-rc0 imports on Python 3.14.6
 # (research F9 tension note); the full tensorflow pin lands in 04-02 with the LSTM.
 scikit-learn==1.8.0
+# Phase 4 pin — LSTM only (CPU-only; isolated to ml/lstm.py so env churn never blocks HistGB/C4).
+# STACK.md's Python-3.12 pin is stale here: tensorflow==2.22.0-rc0 verified on Python 3.14.6.
+tensorflow==2.22.0-rc0
