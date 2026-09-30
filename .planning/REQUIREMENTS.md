@@ -32,15 +32,15 @@
 - [ ] **CTL-02**: User can run occupancy-rule baseline (C2 off if empty 15 min)
 - [ ] **CTL-03**: User can run setpoint-setback baseline (C3 common practical strategy)
 - [ ] **CTL-04**: User can run proposed predictive controller (C4 pre-cool before arrival, early-off before departure) via `BasePolicy.step()` interface
-- [ ] **CTL-05**: User can apply time-varying grid emission factor and ToU tariff for load shifting
-- [ ] **CTL-06**: User can enforce comfort constraint with tradeoff visibility (no comfort-blind savings claims)
+- [x] **CTL-05**: User can apply time-varying grid emission factor and ToU tariff for load shifting
+- [x] **CTL-06**: User can enforce comfort constraint with tradeoff visibility (no comfort-blind savings claims)
 
 ### Evaluation
 
 - [x] **EVAL-01**: User can run scenarios weekday, weekend, heatwave and exam day with >=5 paired seeds reporting mean±std
 - [x] **EVAL-02**: User can report energy kWh, energy saved %, CO2 avoided (hourly factor), operating cost (ToU)
 - [x] **EVAL-03**: User can run ablations with/without forecasting and with/without carbon awareness
-- [ ] **EVAL-04**: User can generate energy-vs-comfort Pareto curve and all required graphs (24h profile, savings by scenario/controller, cumulative CO2, predicted vs actual, ablation bars)
+- [x] **EVAL-04**: User can generate energy-vs-comfort Pareto curve and all required graphs (24h profile, savings by scenario/controller, cumulative CO2, predicted vs actual, ablation bars)
 
 ### Dashboard
 
@@ -91,12 +91,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CTL-02 | Phase 3 | Complete |
 | CTL-03 | Phase 3 | Complete |
 | CTL-04 | Phase 4 | Complete |
-| CTL-05 | Phase 5 | Pending |
-| CTL-06 | Phase 5 | Pending |
+| CTL-05 | Phase 5 | Complete |
+| CTL-06 | Phase 5 | Complete |
 | EVAL-01 | Phase 5 | Complete |
 | EVAL-02 | Phase 5 | Complete |
 | EVAL-03 | Phase 5 | Complete |
-| EVAL-04 | Phase 5 | Pending |
+| EVAL-04 | Phase 5 | Complete |
 | DASH-01 | Phase 6 | Pending |
 | DASH-02 | Phase 6 | Pending |
 

@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: MQTT Pipeline + IoT Contract** - Virtual ESP32 telemetry over MQTT with shared topic contract, QoS1 commands, and fault tolerance
 - [x] **Phase 3: Baselines + Comparison Harness** - Controllers C1–C3 with eval harness producing the first kWh comparison
 - [x] **Phase 4: Forecasting + Predictive Controller** - Occupancy/demand forecaster driving predictive controller C4 with forecast ablation
-- [ ] **Phase 5: Carbon Economics + Full Evaluation Rigor** - Load shifting verified plus scenarios × seeds × ablations × Pareto producing every report number
+- [x] **Phase 5: Carbon Economics + Full Evaluation Rigor** - Load shifting verified plus scenarios × seeds × ablations × Pareto producing every report number
 - [ ] **Phase 6: Dashboard + Report Polish** - Live dashboard, all required graphs, protocol comparison, and one-command reproduction
 
 ## Phase Details
@@ -134,5 +134,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. MQTT Pipeline + IoT Contract | 2/2 | ✓ Complete | 2026-09-29 |
 | 3. Baselines + Comparison Harness | 2/2 | ✓ Complete | 2026-09-29 |
 | 4. Forecasting + Predictive Controller | 3/3 | ✓ Complete | 2026-09-29 |
-| 5. Carbon Economics + Full Evaluation Rigor | 2/3 | In Progress|  |
+| 5. Carbon Economics + Full Evaluation Rigor | 3/3 + gap | ✓ Complete | 2026-09-30 |
 | 6. Dashboard + Report Polish | 0/TBD | Not started | - |
