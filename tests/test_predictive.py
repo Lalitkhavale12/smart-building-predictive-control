@@ -186,3 +186,28 @@ def test_frozen_forecaster_end_to_end_tiny():
     frame2, _ = run_controller(
         PredictivePolicy(), "weekday", 1, days=1, forecast=forecaster)
     assert frame2.equals(frame)
+
+
+def test_ablation_gap(tmp_path):
+    """Both arms run on identical seeds; CSV carries energy + comfort columns."""
+    import pandas as pd
+
+    from ctrl.predictive import run_ablation
+
+    out_csv = tmp_path / "ablation.csv"
+    pred_csv = tmp_path / "pred.csv"
+    table = run_ablation(
+        scenarios=("weekday",), seeds=[0, 1], days=1,
+        out_csv=str(out_csv), pred_csv=str(pred_csv),
+        search=TINY_C4_SEARCH, train_days=1)
+    assert set(table["arm"]) == {"forecast_on", "forecast_off"}
+    assert sorted(table["seed"].unique()) == [0, 1]  # paired seeds
+    for col in ("scenario", "seed", "arm", "energy_kwh",
+                "cost_rs", "co2_kg", "comfort_pct"):
+        assert col in table.columns  # comfort on every row
+    assert len(table) == 4
+    disk = pd.read_csv(out_csv)
+    assert len(disk) == 4 and set(disk["arm"]) == {"forecast_on", "forecast_off"}
+    pred = pd.read_csv(pred_csv)
+    assert {"y_true", "y_pred", "horizon_min"} <= set(pred.columns)
+    assert set(pred["horizon_min"].unique()) == {30, 60}

@@ -393,12 +393,15 @@ def holdout_pred_rows(forecaster, test_ticks, scenario):
 
 def run_ablation(scenarios=("weekday", "weekend", "heatwave"), seeds=None,
                  days=1, out_csv="results/ablation_c4.csv",
-                 pred_csv="results/pred_vs_actual_c4.csv"):
+                 pred_csv="results/pred_vs_actual_c4.csv",
+                 search=None, train_days=3, train_seed=0):
     """D-11 ablation: C4-with-forecast vs C4-as-C3 on paired seeds.
 
     Fresh policy instances per run (same class + params — the flag flip is
     ``forecast=forecaster`` vs ``forecast=None``); forecasters are built once
     per timetable group and reused (never trained inside the loop).
+    ``search``/``train_days`` are test hooks (tiny search, 1-day training);
+    production runs use the full fixed budget on 3-day C1 data.
     """
     import pandas as pd
 
@@ -409,7 +412,8 @@ def run_ablation(scenarios=("weekday", "weekend", "heatwave"), seeds=None,
     for scenario in scenarios:
         group = cfg.SCENARIO_TABLE.get(scenario, "weekday")
         if group not in forecasters:
-            forecaster, test_ticks = build_frozen_forecaster(group)
+            forecaster, test_ticks = build_frozen_forecaster(
+                group, days=train_days, seed=train_seed, search=search)
             forecasters[group] = forecaster
             test_ticks_by_group[group] = test_ticks
             pred_rows.extend(holdout_pred_rows(forecaster, test_ticks, group))
