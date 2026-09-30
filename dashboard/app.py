@@ -139,6 +139,22 @@ with tab_overview:
     with col_b:
         st.subheader(controller_b)
         metric_cards(row_b, base_row)
+    st.subheader("Comfort gauges (% occupied time in band)")
+    gauge_a, gauge_b = st.columns(2)
+    for col, row, name in ((gauge_a, row_a, controller_a), (gauge_b, row_b, controller_b)):
+        with col:
+            st.plotly_chart(
+                go.Figure(
+                    go.Indicator(
+                        mode="gauge+number+delta",
+                        value=float(row["comfort_pct_mean"]),
+                        title={"text": name},
+                        delta={"reference": float(base_row["comfort_pct_mean"])},
+                        gauge={"axis": {"range": [0, 100]}},
+                    )
+                ),
+                use_container_width=True,
+            )
     st.subheader(f"Per-seed spread — {controller_a} / {scenario}")
     st.info("Same 5 paired seeds behind every controller — spread here is weather/occupancy noise, not controller luck.")
     seeds_df = seed_energies(controller_a, scenario)
@@ -147,6 +163,16 @@ with tab_overview:
         use_container_width=True,
     )
     st.dataframe(seeds_df.style.format({"energy_kwh": "{:.3f}"}), use_container_width=True)
+    st.download_button(
+        "Download per-seed table (CSV)",
+        seeds_df.to_csv(index=False),
+        file_name=f"seeds_{controller_a}_{scenario}.csv",
+    )
+    st.download_button(
+        "Download headline table (CSV)",
+        headline[headline["scenario"] == scenario].to_csv(index=False),
+        file_name=f"headline_{scenario}.csv",
+    )
     st.caption(f"Seed {seed} selected in the sidebar is highlighted in the table above.")
 
 with tab_shape:
@@ -183,11 +209,15 @@ with tab_savings:
     st.header("Savings")
     st.info("Every bar is savings vs C3 with paired-seed std. Weekend bars near zero are honest: C1 is already near-optimal there.")
     view = savings[savings["scenario"] == scenario].sort_values("controller")
+    view["highlight"] = (view["controller"] == controller_a).map(
+        {True: "controller A", False: "other"}
+    )
     fig = px.bar(
         view,
         x="controller",
         y="saved_pct_vs_c3_mean",
         error_y="saved_pct_vs_c3_std",
+        color="highlight",
         title=f"Saved % vs C3 — {scenario}",
     )
     st.plotly_chart(fig, use_container_width=True)

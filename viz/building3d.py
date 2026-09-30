@@ -106,6 +106,14 @@ def build_figure(controller, scenario, seed, hour):
         scene=dict(
             xaxis_title="x (m)", yaxis_title="y (m)", zaxis_title="z (m)",
             aspectmode="data",
+            annotations=[
+                dict(
+                    x=(x0 + x1) / 2, y=(y0 + y1) / 2, z=z1 + 0.4,
+                    text=f"{room}<br>F{floor}", showarrow=False,
+                    font=dict(size=10, color="black"),
+                )
+                for room, floor, x0, x1, y0, y1, z0, z1, _ in ROOMS
+            ],
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )
