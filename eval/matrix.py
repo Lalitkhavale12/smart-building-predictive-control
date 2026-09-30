@@ -11,8 +11,8 @@ under results/full_matrix/<controller>/<scenario>/seedNN/telemetry.csv
 (crash-resumable: existing CSVs re-read, not re-run). Headline = paired
 saved-% over C3 (strongest baseline); vs-C1 kept as secondary column.
 Every row carries energy_kwh, saved_pct_vs_c3, cost_rs (ToU), co2_kg
-(hourly EF), comfort_pct (EVAL-02/CTL-06). exam-day resolves to the weekday
-stub and is labeled "exam-day (stub=weekday)" in every table (T-05-06).
+(hourly EF), comfort_pct (EVAL-02/CTL-06). exam-day runs its own dense
+timetable and is labeled "exam-day" in every table (T-05-06).
 
 Forecaster choice is frozen regardless of any pending bake-off verdict:
 one shared frozen forecaster per timetable group, fresh PredictivePolicy
@@ -36,12 +36,12 @@ RESULTS_ROOT = pathlib.Path("results/full_matrix")
 DEFAULT_CONTROLLERS = ["c1", "c2", "c3", "c4-with", "c4-as-c3"]
 DEFAULT_SCENARIOS = ["weekday", "weekend", "heatwave", "exam-day"]
 
-# T-05-06: honest stub labeling in every table.
+# T-05-06: honest scenario labeling in every table.
 SCENARIO_LABELS = {
     "weekday": "weekday",
     "weekend": "weekend",
     "heatwave": "heatwave",
-    "exam-day": "exam-day (stub=weekday)",
+    "exam-day": "exam-day",
 }
 
 

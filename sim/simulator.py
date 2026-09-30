@@ -58,6 +58,8 @@ class BuildingSim:
         # Start rooms at a comfortable 24 C / mid humidity.
         self.t_in = {room: 24.0 for room in self.cfg.ROOMS}
         self.rh = {room: self.cfg.RH_INIT for room in self.cfg.ROOMS}
+        # Thermostat cutout latch per room (False = cooling allowed).
+        self.cutout = {room: False for room in self.cfg.ROOMS}
         # Occupancy timetable built once per run (seeded jitter/absence here).
         self.schedule = occ_mod.get_day_schedule(self.scenario, self.rng)
         return self._obs({room: {"hvac": "OFF", "light": 0} for room in self.cfg.ROOMS})
@@ -73,10 +75,18 @@ class BuildingSim:
             self.rh[room] = wx.rh_step(self.rh[room], self.rng)
             # 3. occupancy lookup (draws happened at reset, same fixed order)
             occ = self._occupancy(room, self.minute)
-            # 4. physics integration
+            # 4. physics integration (thermostat-gated: hardware cutout)
             hvac = action[room]["hvac"]
             light = action[room]["light"]
-            q_hvac = c.Q_HVAC[hvac]
+            if hvac == "OFF":
+                self.cutout[room] = False
+                q_hvac = 0.0
+            else:
+                if self.t_in[room] <= c.THERMOSTAT_LO:
+                    self.cutout[room] = True
+                elif self.t_in[room] >= c.THERMOSTAT_HI:
+                    self.cutout[room] = False
+                q_hvac = 0.0 if self.cutout[room] else c.Q_HVAC[hvac]
             q_occ = occ * c.Q_OCC_PER_PERSON
             self.t_in[room] = th.thermal_step(
                 self.t_in[room], t_out, q_occ, q_hvac, c.R_PER_ROOM[room], c.C_PER_ROOM[room]

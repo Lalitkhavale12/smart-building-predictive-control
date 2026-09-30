@@ -8,7 +8,7 @@ Pure recomputes on saved frames from results/full_matrix/ — zero reruns:
   COMFORT_T_MIN/MAX (eval.sweep.comfort_at_band): locked 22-26 (headlines
   stay on the locked band per D-03), wide 21-27, narrow 23-25.
 
-Output results/sensitivity.csv: tables, not new claims. Exam-day stub
+Output results/sensitivity.csv: tables, not new claims. Exam-day
 labeling preserved via the scenario column (matrix convention).
 
 Writes constrained under results/ (.. rejected, compare.py pattern).

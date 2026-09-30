@@ -26,8 +26,8 @@ def get_day_schedule(scenario, rng, n_minutes=cfg.STEPS_PER_DAY):
 
     Args:
         scenario: one of cfg.SCENARIOS. 'heatwave' reuses the weekday
-            occupancy pattern (only weather differs); 'exam-day' is a STUB
-            that returns weekday blocks until a real exam timetable lands.
+            occupancy pattern (only weather differs); 'exam-day' carries its
+            own dense 09:00-17:00 examination timetable (all rooms).
         rng: numpy.random.Generator — the sim RNG, never a global.
         n_minutes: day length (default 1440).
 

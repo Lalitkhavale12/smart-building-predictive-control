@@ -43,6 +43,14 @@ BASE_TAU_HOURS = 30.0 * 0.12  # 3.6 h, the headline number for the report
 Q_HVAC = {"OFF": 0.0, "REDUCED": -1.2, "ON": -3.5}
 HVAC_LEVELS = tuple(Q_HVAC)
 
+# --- Thermostat (post-Phase-5 calibration: rooms froze without one) ---
+# Real split ACs cut out at setpoint. Without this, constant ON drives rooms
+# toward T_out + R*Q = -74 C equilibrium (measured min -44 C, comfort ~2%).
+# Hysteresis deadband: cut out at/under LO, cut back in at/over HI.
+# Per-room latch lives in BuildingSim (commanded level unchanged — the
+# thermostat gates delivered Q and metered power, exactly like hardware).
+THERMOSTAT_LO, THERMOSTAT_HI = 23.5, 24.5  # degC, setpoint 24 +- deadband
+
 # --- Internal gains ---
 # Q_OCC_PER_PERSON = 0.10 kW sensible heat (~100 W/person, ASHRAE
 # Fundamentals Ch.18 textbook value). 30 students = 3.0 kW, i.e. nearly a
@@ -66,8 +74,8 @@ T_OUT_AMPLITUDE = 4.0
 T_OUT_PEAK_HOUR = 15.0  # hour of daily max
 T_OUT_NOISE_STD = 0.3  # degC, seeded gaussian per step
 HEATWAVE_OFFSET = 4.0  # degC added in heatwave scenario
-RH_INIT = 55.0
-RH_STEP_STD = 0.4  # % RH random-walk step
+RH_INIT = 52.0
+RH_STEP_STD = 0.3  # % RH random-walk step (calibrated: ~85% of steps in 30-60% band)
 RH_MIN, RH_MAX = 30.0, 70.0  # hard clip (D-06)
 
 # --- Scenarios (SIM-02: CLI/config string, never code edits) ---
@@ -119,15 +127,35 @@ TIMETABLES = {
         "office": [],
         "lab": [],
     },
+    # Exam-day: dense 09:00-17:00 examination timetable, lunch gap 12:00-13:00
+    # only. Classrooms 30 (full hall), lab 12 (practical batch), office 4
+    # (exam-cell staff, int fill = fixed roster via the binomial path).
+    "exam-day": {
+        "classroom_A": [
+            ("09:00", "12:00", 30),
+            ("13:00", "17:00", 30),
+        ],
+        "classroom_B": [
+            ("09:00", "12:00", 30),
+            ("13:00", "17:00", 30),
+        ],
+        "office": [
+            ("09:00", "17:00", 4),
+        ],
+        "lab": [
+            ("09:00", "12:00", 12),
+            ("13:00", "17:00", 12),
+        ],
+    },
 }
 # Scenario -> timetable key. Heatwave reuses the weekday occupancy pattern
-# (only weather differs, via HEATWAVE_OFFSET); exam-day is a STUB returning
-# weekday blocks until a real exam timetable is specified (later phase).
+# (only weather differs, via HEATWAVE_OFFSET); exam-day carries its own dense
+# timetable above (post-calibration: no longer a weekday alias).
 SCENARIO_TABLE = {
     "weekday": "weekday",
     "weekend": "weekend",
     "heatwave": "weekday",
-    "exam-day": "weekday",
+    "exam-day": "exam-day",
 }
 
 # --- Occupancy stochastic deviations (seeded, via passed-in rng only) ---

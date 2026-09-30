@@ -25,7 +25,7 @@ def validate_scenario(scenario):
 
 
 def heatwave_offset(scenario):
-    """+4 C in the heatwave scenario, 0 otherwise (incl. exam-day stub)."""
+    """+4 C in the heatwave scenario, 0 otherwise (incl. exam-day)."""
     return cfg.HEATWAVE_OFFSET if validate_scenario(scenario) == "heatwave" else 0.0
 
 

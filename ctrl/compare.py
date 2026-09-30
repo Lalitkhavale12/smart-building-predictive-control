@@ -9,7 +9,7 @@ run under results/comparison/<controller>/<scenario>/seedNN/telemetry.csv
 (controller, scenario) to mean+/-std (ddof=1, the summary.py convention) and
 writes results/comparison/summary.csv. saved_pct is computed within the same
 (scenario, seed) pair, then aggregated. Default scenarios exclude exam-day
-(stub duplicates weekday — honest labeling); full matrix via --scenarios all.
+(dense exam timetable runs in the full matrix); full matrix via --scenarios all.
 All tables carry the comfort column; the CLI prints mean+/-std only, never a
 bare %. Writes are constrained under results/comparison/ (.. rejected).
 """
@@ -72,7 +72,8 @@ def _predictive_policy():
 
 def forecaster_for(scenario):
     """Shared frozen forecaster per timetable group (train once, never in the
-    loop — T-05-04). Heatwave/exam-day reuse the weekday forecaster."""
+    loop — T-05-04). Heatwave reuses the weekday forecaster; exam-day falls
+    back to it (own timetable, pre-wave-B conservative choice)."""
     from ctrl.predictive import build_frozen_forecaster
 
     group = cfg.SCENARIO_TABLE.get(scenario, "weekday")

@@ -33,7 +33,7 @@ MATRIX_SUMMARY = MATRIX_ROOT / "summary.csv"
 
 PEAK_SPAN = (18, 22)  # D-05 peak window 18:00-22:00
 SOLAR_SPAN = (10, 16)  # EF solar dip 10-16h
-G2_SCENARIOS = ["weekday", "weekend", "heatwave"]  # exam-day excluded: stub=weekday
+G2_SCENARIOS = ["weekday", "weekend", "heatwave"]  # exam-day excluded: G2 scope (wave B decides)
 FLAT_EF = grid_mod.GRID_EF_BASE_KG_PER_KWH
 
 
@@ -142,7 +142,7 @@ def fig_g2():
     ax.set_title("G2: energy savings over C3 by scenario (headline = vs strongest baseline)")
     ax.legend(fontsize=8)
     fig.text(0.01, 0.01,
-             _comfort_footnote(summary, G2_SCENARIOS) + "; exam-day=weekday stub, excluded",
+             _comfort_footnote(summary, G2_SCENARIOS) + "; exam-day excluded (G2 scope)",
              fontsize=7)
     fig.tight_layout()
     FIG_DIR.mkdir(parents=True, exist_ok=True)

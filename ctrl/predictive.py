@@ -373,8 +373,10 @@ class FrozenForecaster:
 def build_frozen_forecaster(scenario, days=3, seed=0, search=None, model="histgb"):
     """Fit HistGB occupancy+demand models ONCE on C1 tick telemetry.
 
-    Heatwave/exam-day reuse the weekday timetable (SCENARIO_TABLE), so they
-    share the weekday forecaster; weekend gets its own. Returns
+    Heatwave reuses the weekday timetable (SCENARIO_TABLE), so it shares the
+    weekday forecaster; exam-day carries its own timetable but falls back to
+    the weekday forecaster (conservative until wave B retrains); weekend gets
+    its own. Returns
     ``(forecaster, test_ticks)`` — the holdout ticks feed the
     predicted-vs-actual evidence. Demand models train on C1 data only
     (control-feedback coupling note from research Q3).
