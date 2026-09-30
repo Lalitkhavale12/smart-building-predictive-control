@@ -180,14 +180,15 @@ def _pareto_points():
     band_energy = {r["label"]: r["energy"] for r in pts if r["label"].startswith("sweep:")}
     band_energy.update({("sweep:stock" if k == "stock" else k): v
                         for k, v in band_energy.items()})
-    for _, r in band_wd.iterrows():
-        key = f"sweep:{r['config']}"
-        if key in band_energy and r["band"] != "locked22-26":
-            pts.append({"label": f"{key}@{r['band']}",
+    band_grp = band_wd[band_wd["band"] != "locked22-26"].groupby(["config", "band"])
+    for (config, band_name), grp in band_grp:
+        key = f"sweep:{config}"
+        if key in band_energy:
+            pts.append({"label": f"{key}@{band_name}",
                         "energy": band_energy[key],
                         "energy_std": 0.0,
-                        "comfort": r["comfort_pct"],
-                        "comfort_std": 0.0,
+                        "comfort": grp["comfort_pct"].mean(),
+                        "comfort_std": grp["comfort_pct"].std(ddof=1),
                         "kind": "band"})
     return pd.DataFrame(pts)
 
@@ -239,9 +240,9 @@ def _cumulative_co2(controller, scenario, seeds=(0, 1, 2, 3, 4), ef_by_hour=None
     for seed in seeds:
         path = MATRIX_ROOT / controller / scenario / f"seed{seed:02d}" / "telemetry.csv"
         frame = pd.read_csv(path).sort_values("timestamp").reset_index(drop=True)
-        hours = pd.to_datetime(frame["timestamp"]).dt.hour.to_numpy()
-        power = frame.groupby("timestamp")["power_kW"].sum()
-        power = power.reindex(frame["timestamp"].drop_duplicates()).to_numpy()
+        order = frame["timestamp"].drop_duplicates()
+        power = frame.groupby("timestamp")["power_kW"].sum().reindex(order).to_numpy()
+        hours = pd.to_datetime(order).dt.hour.to_numpy()
         ef = (np.full_like(power, FLAT_EF, dtype=float) if flat
               else np.array([ef_by_hour[h] for h in hours], dtype=float))
         cum = np.cumsum(power / 60.0 * ef)
