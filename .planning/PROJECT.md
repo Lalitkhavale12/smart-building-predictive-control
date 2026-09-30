@@ -17,6 +17,7 @@ Predict occupancy ahead to cut energy, cost and CO2 while keeping occupied rooms
 - ✓ Baselines C1 fixed-schedule, C2 occupancy-rule, C3 setback + comparison harness with first kWh numbers — Phase 3 (70 passed, verified PASS; hard gate cleared)
 - ✓ Forecaster (RF/HistGB + LSTM, walk-forward, leakage-guarded, UCI-validated) + C4 predictive controller with forecast ablation — Phase 4 (98 passed, verified PASS with finding: C4 ablation negative vs C3, plant-oversize tuning question for Phase 5)
 - ✓ Tuned C4 (thr8 + pre-cool REDUCED) beats C3 +2.1% weekday / +3.3% weekend; full 100-run matrix, ablations, Pareto, 7-graph one-command report — Phase 5 (106 passed, verified PASS after honest gap closure: savings are less-energy-everywhere, not off-peak shifting — SHIFTING-FINDING.md)
+- ✓ Live Streamlit dashboard + protocols note + REPRODUCE.md + real G7 screenshot — Phase 6 (117 passed, verified PASS; project SHIPPED)
 
 ### Active
 

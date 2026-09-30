@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Baselines + Comparison Harness** - Controllers C1–C3 with eval harness producing the first kWh comparison
 - [x] **Phase 4: Forecasting + Predictive Controller** - Occupancy/demand forecaster driving predictive controller C4 with forecast ablation
 - [x] **Phase 5: Carbon Economics + Full Evaluation Rigor** - Load shifting verified plus scenarios × seeds × ablations × Pareto producing every report number
-- [ ] **Phase 6: Dashboard + Report Polish** - Live dashboard, all required graphs, protocol comparison, and one-command reproduction
+- [x] **Phase 6: Dashboard + Report Polish** - Live dashboard, all required graphs, protocol comparison, and one-command reproduction
 
 ## Phase Details
 
@@ -140,4 +140,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Baselines + Comparison Harness | 2/2 | ✓ Complete | 2026-09-29 |
 | 4. Forecasting + Predictive Controller | 3/3 | ✓ Complete | 2026-09-29 |
 | 5. Carbon Economics + Full Evaluation Rigor | 3/3 + gap | ✓ Complete | 2026-09-30 |
-| 6. Dashboard + Report Polish | 2/2 | In Progress|  |
+| 6. Dashboard + Report Polish | 2/2 | ✓ Complete | 2026-09-30 |
