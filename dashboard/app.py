@@ -13,6 +13,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from viz.building3d import build_figure
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TABLES = ROOT / "results" / "report_tables"
 FIGS = ROOT / "results" / "figures"
@@ -124,8 +126,8 @@ base_row = row_for("c3", scenario)
 row_a = row_for(controller_a, scenario)
 row_b = row_for(controller_b, scenario)
 
-tab_overview, tab_shape, tab_savings, tab_tradeoff, tab_ablation, tab_forecast = st.tabs(
-    ["Overview", "Load shape", "Savings", "Tradeoff", "Ablation", "Forecast"]
+tab_overview, tab_shape, tab_savings, tab_tradeoff, tab_ablation, tab_forecast, tab_3d = st.tabs(
+    ["Overview", "Load shape", "Savings", "Tradeoff", "Ablation", "Forecast", "3D Building"]
 )
 
 with tab_overview:
@@ -206,6 +208,18 @@ with tab_forecast:
     st.header("Forecast check")
     st.info("Frozen forecaster, walk-forward evaluation — predictions vs actuals with RMSE. No leakage: chronological splits only.")
     st.image(str(ROOT / G5_PNG), caption="G5 forecast — graded report figure (scenario-fixed)")
+
+with tab_3d:
+    st.header("3D Building twin")
+    st.info("F1: classrooms A/B, F2: office/lab — colored by room temperature. Grey F3 terrace is visual-only, not simulated. Hover any room for its simulation inputs.")
+    hour = st.slider("Hour of day", 0, 23, 12)
+    try:
+        st.plotly_chart(
+            build_figure(controller_a, scenario, seed, hour),
+            use_container_width=True,
+        )
+    except FileNotFoundError:
+        st.warning("Telemetry frame missing for this filter — run the evaluation matrix first.")
 
 st.divider()
 st.caption(
