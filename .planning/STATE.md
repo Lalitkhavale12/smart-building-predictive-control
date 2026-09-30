@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-29)
 
 ## Current Position
 
-Phase: 3 of 6 (Phase 3 complete, verified PASS - hard gate cleared: C1-C3 merged)
+Phase: 4 of 6 (Phase 4 complete, verified PASS with finding: C4 ablation negative, tuning for Phase 5)
 Plan: 2 of TBD in Phase 2
 Status: Phase 2 in progress — pipeline vertical slice proven, controller hookup unblocked
 Last activity: 2026-09-29 — Phase 2 plan 02 complete (node shim + bridge + sketch + faults)
