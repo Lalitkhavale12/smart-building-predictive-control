@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 0
 current_phase_name: Phase 1 ready to plan
 status: planning
-stopped_at: Phase 2 plan 02 executed (node shim + bridge loop + sketch + faults, 11 tests green)
-last_updated: "2026-09-29T14:05:00Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-09-30T04:36:13.735Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase 2 plan 02 complete (IOT-01, IOT-02, IOT-04 pipeline slice proven brokerless)
-state_head: 954744222b06b6d4341e1505049a0acced252f0a
+state_head: daa5fb47736afe78acbb25dc36904038cca2c99b
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 13
+  completed_plans: 11
   percent: 0
 ---
 
@@ -54,6 +54,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 05-carbon-economics-full-evaluation P01 | ~55 min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -63,6 +68,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - [Roadmap]: 6 MVP-vertical phases adopted from research flow; EVAL-02 mapped wholly to Phase 5 (no split); CTL-05 mapped wholly to Phase 5 with hourly carbon/ToU series built in Phase 1 as foundation
+- [Phase 0]: Phase 5 plan 01: ship new C4 defaults occ_threshold=8 + precool_level=REDUCED (weekday -12.9pc, heatwave -25.3pc, comfort non-regression)
 
 ### Pending Todos
 
@@ -84,6 +90,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T14:05:00Z
-Stopped at: Phase 2 plan 02 executed (node shim + bridge loop + sketch + faults, 11 tests green)
-Resume file: .planning/phases/02-mqtt-pipeline-iot-contract/02-02-SUMMARY.md
+Last session: 2026-09-30T04:36:13.693Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None
