@@ -88,7 +88,10 @@ def write_summary_tables():
     summary = pd.read_csv(figs.MATRIX_SUMMARY)
     # Headline savings-over-C3 with std + comfort.
     summary.to_csv(figs.TABLES_DIR / "headline_savings_over_c3.csv", index=False)
-    # Shifting metric: peak-window kWh share + Rs + CO2 deltas C4-C3 per seed.
+    # Shifting metric (CTL-05, honest accounting): peak-window kWh share +
+    # Rs + CO2 deltas C4-C3 per seed. Measured outcome is less-energy-
+    # everywhere, NOT load moved off-peak (see SHIFTING-FINDING.md): do not
+    # claim shifting unless d_peak_share is negative with p<0.05.
     from eval.sweep import peak_share_18_22
 
     from ctrl.harness import compute_metrics

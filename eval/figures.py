@@ -100,7 +100,7 @@ def fig_g1(scenario="weekday"):
     ax.set_xlabel("hour of day")
     ax.set_ylabel("total building power [kW] (hourly mean ± std, n=5)")
     ax2.set_ylabel("total occupancy [persons]")
-    ax.set_title(f"G1: 24h load shape C3 vs C4-with — {scenario} (kWh moved out of peak visible)")
+    ax.set_title(f"G1: 24h load shape C3 vs C4-with — {scenario} (all-hours savings; no off-peak shifting claimed)")
     ax.set_xlim(0, 24)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
