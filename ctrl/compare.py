@@ -50,20 +50,50 @@ POLICY_FACTORIES = {
     "c1": lambda scenario: FixedSchedulePolicy(scenario=scenario),
     "c2": lambda scenario: OccupancyRulePolicy(),
     "c3": lambda scenario: SetbackPolicy(),
+    "c4-with": lambda scenario: _predictive_policy(),
+    "c4-as-c3": lambda scenario: _predictive_policy(),
 }
+
+# Controllers whose runs receive the shared frozen forecaster (forecast arm).
+# c4-as-c3 deliberately gets forecast=None -> degrades to C3 exactly
+# (predictive.py fallback) — the forecast-off ablation arm.
+FORECAST_ARMS = {"c4-with"}
+
+_FORECASTERS = {}
+
+
+def _predictive_policy():
+    """Fresh PredictivePolicy per run (04-03 leakage fix) with the shipped
+    05-01 defaults (occ_threshold=8, precool_level=REDUCED)."""
+    from ctrl.predictive import PredictivePolicy
+
+    return PredictivePolicy()
+
+
+def forecaster_for(scenario):
+    """Shared frozen forecaster per timetable group (train once, never in the
+    loop — T-05-04). Heatwave/exam-day reuse the weekday forecaster."""
+    from ctrl.predictive import build_frozen_forecaster
+
+    group = cfg.SCENARIO_TABLE.get(scenario, "weekday")
+    key = group if group in ("weekday", "weekend") else "weekday"
+    if key not in _FORECASTERS:
+        forecaster, _ = build_frozen_forecaster(key)
+        _FORECASTERS[key] = forecaster
+    return _FORECASTERS[key]
 
 DEFAULT_SCENARIOS = ["weekday", "weekend", "heatwave"]
 
 
 def resolve_run_dir(out_root, controller, scenario, seed):
-    """Constrain per-run output under results/comparison/ (reject traversal)."""
+    """Constrain per-run output under out_root (reject traversal)."""
     for part in (controller, scenario):
         if ".." in pathlib.PurePath(part).parts:
             raise ValueError(f"path traversal rejected: {part!r}")
-    root = (pathlib.Path.cwd() / RESULTS_ROOT).resolve()
+    root = (pathlib.Path.cwd() / out_root).resolve()
     candidate = (pathlib.Path(out_root) / controller / scenario / f"seed{seed:02d}").resolve()
     if candidate != root and root not in candidate.parents:
-        raise ValueError(f"output must stay under results/comparison/, got {candidate}")
+        raise ValueError(f"output must stay under {out_root}/, got {candidate}")
     return candidate
 
 
@@ -79,8 +109,13 @@ def run_matrix(controllers, scenarios, seeds, out_root=RESULTS_ROOT):
                     frame = pd.read_csv(csv_path)
                     metrics = compute_metrics(frame)
                 else:
+                    policy = POLICY_FACTORIES[controller](scenario)
+                    forecast = (
+                        forecaster_for(scenario)
+                        if controller in FORECAST_ARMS else None
+                    )
                     frame, metrics = run_controller(
-                        POLICY_FACTORIES[controller](scenario), scenario, seed
+                        policy, scenario, seed, forecast=forecast
                     )
                     run_dir.mkdir(parents=True, exist_ok=True)
                     frame.to_csv(csv_path, index=False, float_format="%.4f")
@@ -91,39 +126,78 @@ def run_matrix(controllers, scenarios, seeds, out_root=RESULTS_ROOT):
     return per_run
 
 
-def aggregate(per_run, n_seeds):
-    """Per-(controller, scenario) mean+/-std; saved_pct paired within (scenario, seed)."""
+def summary_columns(baselines=("c1",)):
+    """Summary column order for the given baseline controllers."""
+    cols = ["controller", "scenario", "n_seeds",
+            "energy_kwh_mean", "energy_kwh_std"]
+    for b in baselines:
+        cols += [f"saved_pct_vs_{b}_mean", f"saved_pct_vs_{b}_std"]
+    cols += ["cost_rs_mean", "cost_rs_std",
+             "co2_kg_mean", "co2_kg_std",
+             "comfort_pct_mean", "comfort_pct_std"]
+    return cols
+
+
+def aggregate(per_run, n_seeds, baselines=("c1",)):
+    """Per-(controller, scenario) mean+/-std; saved_pct paired within
+    (scenario, seed) vs each baseline controller, then aggregated (D-12:
+    never difference-of-means). Default baselines=("c1",) reproduces the
+    Phase-3 summary exactly; Phase-5 passes ("c3", "c1")."""
+    if isinstance(baselines, str):
+        baselines = (baselines,)
     df = pd.DataFrame(per_run)
-    c1_energy = {
-        (r["scenario"], r["seed"]): r["energy_kwh"]
-        for r in per_run if r["controller"] == "c1"
+    base_energy = {
+        b: {(r["scenario"], r["seed"]): r["energy_kwh"]
+            for r in per_run if r["controller"] == b}
+        for b in baselines
     }
-    df["saved_pct"] = df.apply(
-        lambda r: (
-            100.0 * (c1_energy[(r["scenario"], r["seed"])] - r["energy_kwh"])
-            / c1_energy[(r["scenario"], r["seed"])]
-            if (r["scenario"], r["seed"]) in c1_energy and c1_energy[(r["scenario"], r["seed"])] > 0
-            else (0.0 if r["controller"] == "c1" else float("nan"))
-        ),
-        axis=1,
-    )
+    for b in baselines:
+        be = base_energy[b]
+        df[f"saved_pct_vs_{b}"] = df.apply(
+            lambda r, be=be, b=b: (
+                100.0 * (be[(r["scenario"], r["seed"])] - r["energy_kwh"])
+                / be[(r["scenario"], r["seed"])]
+                if (r["scenario"], r["seed"]) in be and be[(r["scenario"], r["seed"])] > 0
+                else (0.0 if r["controller"] == b else float("nan"))
+            ),
+            axis=1,
+        )
     rows = []
     for (controller, scenario), group in df.groupby(["controller", "scenario"]):
-        means, stds = {}, {}
-        for col in ("energy_kwh", "saved_pct", "cost_rs", "co2_kg", "comfort_pct"):
+        row = {"controller": controller, "scenario": scenario, "n_seeds": n_seeds}
+        for col in ("energy_kwh", "cost_rs", "co2_kg", "comfort_pct"):
             vals = group[col].to_numpy(dtype=float)
-            means[col] = float(np.mean(vals))
-            stds[col] = float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0
-        rows.append({
-            "controller": controller, "scenario": scenario, "n_seeds": n_seeds,
-            "energy_kwh_mean": means["energy_kwh"], "energy_kwh_std": stds["energy_kwh"],
-            "saved_pct_vs_c1_mean": means["saved_pct"], "saved_pct_vs_c1_std": stds["saved_pct"],
-            "cost_rs_mean": means["cost_rs"], "cost_rs_std": stds["cost_rs"],
-            "co2_kg_mean": means["co2_kg"], "co2_kg_std": stds["co2_kg"],
-            "comfort_pct_mean": means["comfort_pct"], "comfort_pct_std": stds["comfort_pct"],
-        })
-    return pd.DataFrame(rows, columns=SUMMARY_COLUMNS).sort_values(
+            row[f"{col}_mean"] = float(np.mean(vals))
+            row[f"{col}_std"] = float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0
+        for b in baselines:
+            vals = group[f"saved_pct_vs_{b}"].to_numpy(dtype=float)
+            if np.isnan(vals).all():
+                row[f"saved_pct_vs_{b}_mean"] = float("nan")
+                row[f"saved_pct_vs_{b}_std"] = float("nan")
+            else:
+                row[f"saved_pct_vs_{b}_mean"] = float(np.nanmean(vals))
+                row[f"saved_pct_vs_{b}_std"] = (
+                    float(np.nanstd(vals, ddof=1)) if len(vals) > 1 else 0.0)
+        rows.append(row)
+    return pd.DataFrame(rows, columns=summary_columns(baselines)).sort_values(
         ["scenario", "controller"]).reset_index(drop=True)
+
+
+def paired_ttest(per_run, scenario, a, b, metric="energy_kwh"):
+    """Paired t-test of controller a vs b within one scenario (paired seeds).
+
+    Returns (t, p); p > 0.05 is reported as no-significant-difference (D-12).
+    """
+    from scipy import stats as _stats
+
+    df = pd.DataFrame(per_run)
+    da = df[(df["scenario"] == scenario) & (df["controller"] == a)]
+    db = df[(df["scenario"] == scenario) & (df["controller"] == b)]
+    sa = da.set_index("seed")[metric]
+    sb = db.set_index("seed")[metric]
+    common = sa.index.intersection(sb.index)
+    t, p = _stats.ttest_rel(sa.loc[common], sb.loc[common])
+    return float(t), float(p)
 
 
 def render_figure(controllers, out_root, path):
