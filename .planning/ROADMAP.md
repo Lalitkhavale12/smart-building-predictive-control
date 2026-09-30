@@ -101,11 +101,11 @@ Plans:
   4. User can read energy kWh, saved %, CO₂ avoided (hourly factor), and ToU operating cost for every controller ← EVAL-02 ✓
   5. User can see ablation bars proving what forecasting adds and what carbon-awareness adds, plus the energy-vs-comfort Pareto curve and all required graphs ← EVAL-03, EVAL-04 ✓
 
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 Plans:
 
 - [x] 05-01-PLAN.md — C4 tuning investigation: wire dead params, threshold sweep, promotion verdict (CTL-05, CTL-06)
-- [ ] 05-02-PLAN.md — Full 100-run matrix + forecast/carbon ablations + sensitivities (EVAL-01, EVAL-02, EVAL-03)
+- [x] 05-02-PLAN.md — Full 100-run matrix + forecast/carbon ablations + sensitivities (EVAL-01, EVAL-02, EVAL-03)
 - [ ] 05-03-PLAN.md — Pareto + 7-graph one-command report (EVAL-04)
 
 ### Phase 6: Dashboard + Report Polish
@@ -134,5 +134,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. MQTT Pipeline + IoT Contract | 2/2 | ✓ Complete | 2026-09-29 |
 | 3. Baselines + Comparison Harness | 2/2 | ✓ Complete | 2026-09-29 |
 | 4. Forecasting + Predictive Controller | 3/3 | ✓ Complete | 2026-09-29 |
-| 5. Carbon Economics + Full Evaluation Rigor | 1/3 | In Progress|  |
+| 5. Carbon Economics + Full Evaluation Rigor | 2/3 | In Progress|  |
 | 6. Dashboard + Report Polish | 0/TBD | Not started | - |

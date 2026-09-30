@@ -3,7 +3,7 @@ gsd_state_version: "1.0"
 current_phase: 0
 current_phase_name: Phase 1 ready to plan
 status: planning
-stopped_at: Completed 05-01-PLAN.md
+stopped_at: Completed 05-02-PLAN.md
 last_updated: "2026-09-30T04:36:13.735Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase 2 plan 02 complete (IOT-01, IOT-02, IOT-04 pipeline slice proven brokerless)
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 05-carbon-economics-full-evaluation P01 | ~55 min | 3 tasks | 5 files |
+| Phase 05-carbon-economics-full-evaluation P02 | ~35 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,7 @@ Recent decisions affecting current work:
 
 - [Roadmap]: 6 MVP-vertical phases adopted from research flow; EVAL-02 mapped wholly to Phase 5 (no split); CTL-05 mapped wholly to Phase 5 with hourly carbon/ToU series built in Phase 1 as foundation
 - [Phase 0]: Phase 5 plan 01: ship new C4 defaults occ_threshold=8 + precool_level=REDUCED (weekday -12.9pc, heatwave -25.3pc, comfort non-regression)
+- [Phase 5 plan 02]: 100-run matrix headlines paired vs C3 — c4-with weekday +2.12+-0.63pc (p=0.0018), weekend +3.33pc, heatwave +0.53pc (p=0.06 ns); carbon win is less-energy not shifted-energy; EVAL-01/02/03 complete
 
 ### Pending Todos
 
@@ -91,5 +93,5 @@ Items acknowledged and deferred at milestone close, most recent first:
 ## Session Continuity
 
 Last session: 2026-09-30T04:36:13.693Z
-Stopped at: Completed 05-01-PLAN.md
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

@@ -37,9 +37,9 @@
 
 ### Evaluation
 
-- [ ] **EVAL-01**: User can run scenarios weekday, weekend, heatwave and exam day with >=5 paired seeds reporting mean±std
-- [ ] **EVAL-02**: User can report energy kWh, energy saved %, CO2 avoided (hourly factor), operating cost (ToU)
-- [ ] **EVAL-03**: User can run ablations with/without forecasting and with/without carbon awareness
+- [x] **EVAL-01**: User can run scenarios weekday, weekend, heatwave and exam day with >=5 paired seeds reporting mean±std
+- [x] **EVAL-02**: User can report energy kWh, energy saved %, CO2 avoided (hourly factor), operating cost (ToU)
+- [x] **EVAL-03**: User can run ablations with/without forecasting and with/without carbon awareness
 - [ ] **EVAL-04**: User can generate energy-vs-comfort Pareto curve and all required graphs (24h profile, savings by scenario/controller, cumulative CO2, predicted vs actual, ablation bars)
 
 ### Dashboard
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CTL-04 | Phase 4 | Complete |
 | CTL-05 | Phase 5 | Pending |
 | CTL-06 | Phase 5 | Pending |
-| EVAL-01 | Phase 5 | Pending |
-| EVAL-02 | Phase 5 | Pending |
-| EVAL-03 | Phase 5 | Pending |
+| EVAL-01 | Phase 5 | Complete |
+| EVAL-02 | Phase 5 | Complete |
+| EVAL-03 | Phase 5 | Complete |
 | EVAL-04 | Phase 5 | Pending |
 | DASH-01 | Phase 6 | Pending |
 | DASH-02 | Phase 6 | Pending |
