@@ -108,26 +108,65 @@ class PredictivePolicy(SetbackPolicy):
       so no occupied-room comfort exposure — T-04-05).
     - Otherwise C3 exactly: occupied rooms, REDUCED/OFF with no predicted
       arrival, OFF staying empty.
+
+    Phase-5 tuning investigation (D-01: constructor params, never hardcoded):
+
+    - ``precool_min`` (default 30): <= 30 gates pre-cool on ``occ_30``;
+      > 30 gates on ``occ_60`` (far-horizon arrival only).
+    - ``earlyoff_min`` (default 30): <= 30 gates early-off on ``occ_60``
+      (``occ_30`` emptiness implied by the elif); > 30 additionally
+      requires ``occ_30`` empty — a sustained-departure proxy with no state.
+    - ``precool_level`` (default "ON"): H1 pre-cool-to-REDUCED variant
+      (``"REDUCED"`` spends ~0.6 kWh per pre-cool vs ~1.75 kWh at full ON).
+    - ``earlyoff_from_reduced`` (default False): H2 — early-off also fires
+      when C3-hold says REDUCED (the common empty-room state under C3).
+    - ``require_both_horizons`` (default False): H4 — pre-cool requires
+      ``occ_30`` AND ``occ_60`` both >= threshold (arrival persistent
+      across horizons; kills single-horizon false positives).
+    - ``precool_blackout`` (default None): D-08 price-gated variant, e.g.
+      ``(18, 22)`` blocks pre-cool during those hours (occupied rooms are
+      untouched by the overlay anyway, so C3 still cools real occupants).
+
+    Stock defaults reproduce the pre-Phase-5 overlay exactly (regression-
+    guarded by tests/test_c4_tuning.py::test_stock_defaults_reproduce_legacy).
     """
 
     def __init__(self, vacancy_min=15, setback_min=60,
-                 precool_min=30, earlyoff_min=30, occ_threshold=1):
+                 precool_min=30, earlyoff_min=30, occ_threshold=1,
+                 precool_level="ON", earlyoff_from_reduced=False,
+                 require_both_horizons=False, precool_blackout=None):
         super().__init__(vacancy_min=vacancy_min, setback_min=setback_min)
         self.precool_min = precool_min
         self.earlyoff_min = earlyoff_min
         self.occ_threshold = occ_threshold
+        self.precool_level = precool_level
+        self.earlyoff_from_reduced = earlyoff_from_reduced
+        self.require_both_horizons = require_both_horizons
+        self.precool_blackout = precool_blackout
         self._calls = 0
+        self._minute = 0
 
     def step(self, obs, forecast=None, signals=None):
         """Map obs -> action; ``obs`` treated read-only, never mutated."""
         minute = ((self._calls * TICK) % cfg.STEPS_PER_DAY)
         self._calls += 1
+        self._minute = minute
         if forecast is None:
             return super().step(obs, forecast=None, signals=signals)
         if hasattr(forecast, "observe"):
             forecast.observe(obs, minute)
         base = super().step(obs, forecast=None, signals=signals)
         return self._apply_overlay(obs, base, forecast)
+
+    def _precool_blocked(self):
+        """True when the current control minute falls in the blackout window."""
+        if self.precool_blackout is None:
+            return False
+        start, end = self.precool_blackout
+        hour = (self._minute % cfg.STEPS_PER_DAY) / 60.0
+        if start <= end:
+            return start <= hour < end
+        return hour >= start or hour < end  # overnight window wraps midnight
 
     def _apply_overlay(self, obs, base, forecast):
         out = {room: dict(base[room]) for room in base}
@@ -143,11 +182,23 @@ class PredictivePolicy(SetbackPolicy):
             if occ30 is None or occ60 is None:
                 continue  # garbage predictions fall back to C3 (T-04-04)
             hvac = out[room]["hvac"]
-            if occ30 >= self.occ_threshold:
-                if hvac != "ON":
-                    out[room]["hvac"] = "ON"  # PRE-COOL before arrival
-            elif occ60 < self.occ_threshold and hvac == "ON":
-                out[room]["hvac"] = "OFF"  # EARLY-OFF: skip the C3 hold
+            if self.require_both_horizons:
+                arrival = (occ30 >= self.occ_threshold
+                           and occ60 >= self.occ_threshold)
+            elif self.precool_min > 30:
+                arrival = occ60 >= self.occ_threshold
+            else:
+                arrival = occ30 >= self.occ_threshold
+            if arrival:
+                if hvac != "ON" and not self._precool_blocked():
+                    out[room]["hvac"] = self.precool_level  # PRE-COOL
+                # Blackout-suppressed arrivals keep C3 (never fall to
+                # early-off: occ30 >= threshold contradicts departure).
+            elif occ60 < self.occ_threshold and (
+                    self.earlyoff_min <= 30 or occ30 < self.occ_threshold):
+                targets = ("ON", "REDUCED") if self.earlyoff_from_reduced else ("ON",)
+                if hvac in targets:
+                    out[room]["hvac"] = "OFF"  # EARLY-OFF: skip the C3 hold
         return out
 
 
