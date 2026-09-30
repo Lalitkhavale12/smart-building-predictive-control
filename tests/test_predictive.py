@@ -70,7 +70,8 @@ def _stub(occ_30, occ_60=0.0):
 
 def test_precool_fires_on_predicted_arrival():
     """Empty room + arrival within 30 min forces ON (C3 would say OFF)."""
-    c4 = PredictivePolicy()
+    # Pinned legacy defaults (shipped defaults tuned in Phase 5, see TUNING.md).
+    c4 = PredictivePolicy(occ_threshold=1, precool_level="ON")
     action = c4.step(_obs4(0), forecast=_stub(25.0))
     assert action["classroom_A"]["hvac"] == "ON"  # C3 unseen-default is OFF
     assert action["classroom_A"]["light"] == 0
@@ -78,7 +79,7 @@ def test_precool_fires_on_predicted_arrival():
 
 def test_precool_overrides_reduced_hold():
     """Arrival forecast upgrades a C3-REDUCED room to ON."""
-    c4 = PredictivePolicy()
+    c4 = PredictivePolicy(occ_threshold=1, precool_level="ON")  # legacy pin
     empty_forecast = _stub(0.0)
     c4.step(_obs4(4), forecast=empty_forecast)  # occupy: reset vacancy timer
     for _ in range(6):  # 30 empty min -> C3 REDUCED, forecast empty -> no overlay
@@ -99,7 +100,7 @@ def test_earlyoff_fires_when_c3_holds_on_but_forecast_empty():
 
 def test_earlyoff_blocked_by_predicted_arrival():
     """Same departure, but arrival forecast keeps the C3 hold ON."""
-    c4 = PredictivePolicy()
+    c4 = PredictivePolicy(occ_threshold=1)  # legacy pin: 6.0 >= 1 is arrival
     c4.step(_obs4(3), forecast=_stub(0.0))
     assert c4.step(_obs4(0), forecast=_stub(6.0))["lab"]["hvac"] == "ON"
 

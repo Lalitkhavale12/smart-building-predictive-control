@@ -96,7 +96,11 @@ class PredictivePolicy(SetbackPolicy):
 
     Constructor thresholds are agent's-discretion params with documented
     defaults: ``precool_min``/``earlyoff_min`` = 30 min (== the +30 forecast
-    horizon), ``occ_threshold`` = 1 person.
+    horizon); ``occ_threshold`` = 8 persons and ``precool_level`` =
+    "REDUCED" (Phase-5 tuning verdict, results/TUNING.md — measured
+    -12.9%/-25.3% energy win over the Phase-4 stock with comfort
+    non-regression; pass explicit ``occ_threshold=1, precool_level="ON"``
+    for the legacy stock behavior).
 
     Overlay law, applied on top of the C3 base action per empty room:
 
@@ -132,8 +136,8 @@ class PredictivePolicy(SetbackPolicy):
     """
 
     def __init__(self, vacancy_min=15, setback_min=60,
-                 precool_min=30, earlyoff_min=30, occ_threshold=1,
-                 precool_level="ON", earlyoff_from_reduced=False,
+                 precool_min=30, earlyoff_min=30, occ_threshold=8,
+                 precool_level="REDUCED", earlyoff_from_reduced=False,
                  require_both_horizons=False, precool_blackout=None):
         super().__init__(vacancy_min=vacancy_min, setback_min=setback_min)
         self.precool_min = precool_min
