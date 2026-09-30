@@ -120,7 +120,12 @@ Plans:
   2. User can read the brief MQTT vs HTTP vs CoAP comparison with protocol choice rationale and MQTT security note ← DASH-02 ✓
   3. User can reproduce all required graphs and the report from a pinned env plus seed set with one command ← DASH-01 ✓
 
-**Plans**: TBD
+**Plans**: 2/2 plans executed
+Plans:
+
+- [x] 06-01-PLAN.md — Streamlit dashboard viewer + pins + boot smoke (DASH-01)
+- [x] 06-02-PLAN.md — Protocols note + REPRODUCE.md + G7 screenshot pipeline (DASH-02)
+
 **UI hint**: yes
 
 ## Progress
@@ -135,4 +140,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Baselines + Comparison Harness | 2/2 | ✓ Complete | 2026-09-29 |
 | 4. Forecasting + Predictive Controller | 3/3 | ✓ Complete | 2026-09-29 |
 | 5. Carbon Economics + Full Evaluation Rigor | 3/3 + gap | ✓ Complete | 2026-09-30 |
-| 6. Dashboard + Report Polish | 0/TBD | Not started | - |
+| 6. Dashboard + Report Polish | 2/2 | In Progress|  |

@@ -45,7 +45,7 @@
 ### Dashboard
 
 - [ ] **DASH-01**: User can view live energy, comfort and savings on dashboard (Streamlit primary + ThingSpeak/Blynk syllabus screenshot)
-- [ ] **DASH-02**: User can compare MQTT vs HTTP vs CoAP briefly with protocol choice rationale and MQTT security note
+- [x] **DASH-02**: User can compare MQTT vs HTTP vs CoAP briefly with protocol choice rationale and MQTT security note
 
 ## v2 Requirements
 
@@ -98,9 +98,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EVAL-03 | Phase 5 | Complete |
 | EVAL-04 | Phase 5 | Complete |
 | DASH-01 | Phase 6 | Pending |
-| DASH-02 | Phase 6 | Pending |
+| DASH-02 | Phase 6 | Complete |
 
 **Coverage:**
+
 - v1 requirements: 24 total
 - Mapped to phases: 24
 - Unmapped: 0 ✓
