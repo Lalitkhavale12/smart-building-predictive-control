@@ -140,6 +140,9 @@ def run_graph(key):
         return figs.fig_g6()
     if key == "g7":
         figs.FIG_DIR.mkdir(parents=True, exist_ok=True)
+        png = figs.FIG_DIR / "fig_g7_dashboard.png"
+        if png.exists():
+            return png
         G7_STUB.write_text(G7_TEXT)
         return G7_STUB
     raise ValueError(f"unknown graph key: {key!r}")
