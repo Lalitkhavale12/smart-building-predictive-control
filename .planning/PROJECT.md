@@ -15,8 +15,9 @@ Predict occupancy ahead to cut energy, cost and CO2 while keeping occupied rooms
 - ✓ Seeded multi-room RC-thermal simulator with CSV logging, comfort metric, hourly carbon/ToU series — Phase 1 (27 tests green, verified PASS)
 - ✓ IoT pipeline: virtual ESP32 shim → MQTT (topics.py contract, QoS1 commands, LWT) → bridge → dashboard-ready — Phase 2 (51 passed, verified PASS)
 - ✓ Baselines C1 fixed-schedule, C2 occupancy-rule, C3 setback + comparison harness with first kWh numbers — Phase 3 (70 passed, verified PASS; hard gate cleared)
-- ✓ Forecaster (RF/HistGB + LSTM, walk-forward, leakage-guarded, UCI-validated) + C4 predictive controller with forecast ablation — Phase 4 (98 passed, verified PASS with finding: C4 ablation negative vs C3, plant-oversize tuning question for Phase 5)
-- ✓ Tuned C4 (thr8 + pre-cool REDUCED) beats C3 +2.1% weekday / +3.3% weekend; full 100-run matrix, ablations, Pareto, 7-graph one-command report — Phase 5 (106 passed, verified PASS after honest gap closure: savings are less-energy-everywhere, not off-peak shifting — SHIFTING-FINDING.md)
+- ✓ Forecaster (RF/HistGB + LSTM, walk-forward, leakage-guarded, UCI-validated) + C4 predictive controller with forecast ablation — Phase 4 (98 passed, verified PASS; see recalibration note below)
+- ✓ Tuned C4 + full 100-run matrix, ablations, Pareto, 7-graph one-command report — Phase 5 (106 passed, verified PASS after honest gap closure — SHIFTING-FINDING.md)
+- ✓ Post-Phase-5 recalibration: thermostat deadband + calmer RH + real exam-day timetable (fix: rooms froze to −44 °C, comfort ~2%). Re-measured: comfort sane (60–75%), C4 beats C3 on comfort in all 4 scenarios (+3–6pp) at small energy cost — comfort-per-kWh thesis. Full story in .planning/PHASE-RECALIBRATION-A.md / -B.md
 - ✓ Live Streamlit dashboard + protocols note + REPRODUCE.md + real G7 screenshot — Phase 6 (117 passed, verified PASS; project SHIPPED)
 
 ### Active
