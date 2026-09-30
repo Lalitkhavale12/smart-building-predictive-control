@@ -99,7 +99,9 @@ class PredictivePolicy(SetbackPolicy):
     horizon); ``occ_threshold`` = 8 persons and ``precool_level`` =
     "REDUCED" (Phase-5 tuning verdict, results/TUNING.md — measured
     -12.9%/-25.3% energy win over the Phase-4 stock with comfort
-    non-regression; pass explicit ``occ_threshold=1, precool_level="ON"``
+    non-regression on the pre-thermostat plant; Wave-B re-measurement on
+    thermostat physics shows the overlay now trades +energy for +comfort —
+    see .planning/PHASE-RECALIBRATION-B.md; pass explicit ``occ_threshold=1, precool_level="ON"``
     for the legacy stock behavior).
 
     Overlay law, applied on top of the C3 base action per empty room:

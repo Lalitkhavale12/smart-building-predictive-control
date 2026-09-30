@@ -88,7 +88,9 @@ def test_shipped_defaults_are_tuned():
     """Shipped defaults are the Phase-5 sweep winner (TUNING.md verdict).
 
     Winner ``precool-reduced+thr8``: weekday -12.9%, heatwave -25.3% mean
-    energy win over legacy stock with comfort non-regression (paired seeds).
+    energy win over legacy stock with comfort non-regression (paired seeds,
+    pre-thermostat plant; Wave-B re-measured the overlay as +energy/+comfort
+    on thermostat physics — defaults unchanged, claim scoped to 05-01).
     """
     tuned = PredictivePolicy()
     assert tuned.occ_threshold == 8
