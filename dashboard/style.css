@@ -1,0 +1,80 @@
+/* Smart Building Dashboard — card system (ui-ux-pro-max design system).
+   Palette: primary #1E40AF, secondary #3B82F6, accent #F59E0B,
+   background #F8FAFC, text slate-900 #0F172A. Light mode only. */
+
+/* ---- Card base: metrics, charts, images, tables ---------------------- */
+div[data-testid="stMetric"],
+div[data-testid="stPlotlyChart"],
+div[data-testid="stImage"],
+div[data-testid="stDataFrame"] {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    padding: 16px;
+    transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+/* Metric cards lift on hover (no layout shift: shadow/border only) */
+div[data-testid="stMetric"]:hover {
+    border-color: #93C5FD;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+}
+
+/* Metric value in primary blue; keep delta colors native */
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #1E40AF;
+}
+
+/* ---- Section headers ------------------------------------------------- */
+section.main h2 {
+    color: #1E3A8A;
+    border-bottom: 2px solid #DBEAFE;
+    padding-bottom: 8px;
+}
+
+/* ---- Tabs ------------------------------------------------------------- */
+button[data-baseweb="tab"] {
+    border-radius: 8px 8px 0 0;
+    transition: color 200ms ease, background-color 200ms ease;
+}
+button[data-baseweb="tab"]:hover {
+    color: #1E40AF;
+    background-color: #EFF6FF;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #1E40AF;
+    border-bottom: 3px solid #1E40AF;
+    font-weight: 600;
+}
+
+/* ---- Sidebar ---------------------------------------------------------- */
+section[data-testid="stSidebar"] {
+    background-color: #EFF4FB;
+    border-right: 1px solid #E2E8F0;
+}
+
+/* ---- Buttons ---------------------------------------------------------- */
+div[data-testid="stDownloadButton"] button,
+div[data-testid="stBaseButton-secondary"] button {
+    border: 1px solid #BFDBFE;
+    border-radius: 8px;
+    transition: background-color 200ms ease, border-color 200ms ease;
+}
+div[data-testid="stDownloadButton"] button:hover,
+div[data-testid="stBaseButton-secondary"] button:hover {
+    border-color: #1E40AF;
+    background-color: #EFF6FF;
+}
+
+/* ---- Accessibility ------------------------------------------------------ */
+:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}

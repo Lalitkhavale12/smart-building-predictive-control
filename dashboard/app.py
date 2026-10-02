@@ -36,8 +36,11 @@ SEEDS = [0, 1, 2, 3, 4]
 
 st.set_page_config(
     page_title="Smart Building — Energy/Comfort/Savings",
-    page_icon=":office:",
     layout="wide",
+)
+st.markdown(
+    f"<style>{(ROOT / 'dashboard' / 'style.css').read_text(encoding='utf-8')}</style>",
+    unsafe_allow_html=True,
 )
 st.title("Carbon- and Comfort-Aware Predictive Control — Dashboard")
 
