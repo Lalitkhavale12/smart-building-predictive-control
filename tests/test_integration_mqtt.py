@@ -29,16 +29,26 @@ def _require_broker():
         pytest.skip("paho-mqtt not installed")
 
 
-def _recv(wrapper, timeout=5.0):
+def _publish_until_recv(publisher, topic, payload, qos, receiver,
+                        expected_topic, deadline=10.0):
+    """Publish (retrying) until the receiver's inbox gets the topic.
+
+    The broker SUBSCRIBE from _on_connect is async — a single publish can
+    win the race and be dropped (QoS 0). Retrying separates product-path
+    failures (never arrives) from timing luck (arrives late).
+    """
     import queue
 
-    deadline = time.time() + timeout
-    while time.time() < deadline:
+    end = time.time() + deadline
+    while time.time() < end:
+        publisher.publish(topic, payload, qos=qos)
         try:
-            return wrapper.inbox.get(timeout=0.2)
+            msg = receiver.inbox.get(timeout=0.5)
+            assert msg.topic == expected_topic
+            return msg
         except queue.Empty:
             continue
-    raise AssertionError("timed out waiting for broker message")
+    raise AssertionError(f"no {expected_topic} after {deadline}s of publishes")
 
 
 def test_telemetry_roundtrip_real_broker():
@@ -52,8 +62,8 @@ def test_telemetry_roundtrip_real_broker():
     bridge.start_loop()
     try:
         payload = json.dumps({"room": "office", "T_in_C": 25.0})
-        node.publish(topics.telemetry_topic("office"), payload, qos=0)
-        assert _recv(bridge).topic == "building/office/telemetry"
+        _publish_until_recv(node, topics.telemetry_topic("office"), payload,
+                            0, bridge, "building/office/telemetry")
     finally:
         node.disconnect()
         bridge.disconnect()
@@ -69,9 +79,9 @@ def test_command_qos1_real_broker():
     node.start_loop()
     bridge.start_loop()
     try:
-        bridge.publish(topics.command_topic("lab", "light"), '{"light": 1}', qos=1)
-        msg = _recv(node)
-        assert msg.topic == "building/lab/command/light"
+        msg = _publish_until_recv(bridge, topics.command_topic("lab", "light"),
+                                  '{"light": 1}', 1, node,
+                                  "building/lab/command/light")
         assert json.loads(msg.payload) == {"light": 1}
     finally:
         node.disconnect()
