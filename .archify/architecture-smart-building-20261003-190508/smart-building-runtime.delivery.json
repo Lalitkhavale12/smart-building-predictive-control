@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6d34f2fc-dbac-4b8c-a4b0-3e10e5248bb2",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\candidate.json",
+  "output": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\smart-building-runtime.html",
+  "specification": {
+    "sha256": "1a5432fb616e0f8cc1c312de7e60dafe3c5e565febfb8cd4026cfc8314393e7c",
+    "bytes": 7444
+  },
+  "artifact": {
+    "sha256": "eaa330ba19391995b1cc277ed8a02d53f0fea57e53a8da9c37289e5164ddce71",
+    "bytes": 770817
+  }
+}

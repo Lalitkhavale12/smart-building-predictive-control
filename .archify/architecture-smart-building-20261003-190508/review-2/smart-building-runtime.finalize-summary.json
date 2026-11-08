@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\candidate.json",
+    "sha256": "1a5432fb616e0f8cc1c312de7e60dafe3c5e565febfb8cd4026cfc8314393e7c",
+    "bytes": 7444
+  },
+  "artifact": {
+    "path": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\smart-building-runtime.html",
+    "sha256": "eaa330ba19391995b1cc277ed8a02d53f0fea57e53a8da9c37289e5164ddce71",
+    "bytes": 770817
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\review-2\\smart-building-runtime.finalize.json",
+    "summaryReceipt": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\review-2\\smart-building-runtime.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\Lalit\\OneDrive\\Desktop\\TY\\IAS\\Project\\.archify\\architecture-smart-building-20261003-190508\\review-2\\smart-building-runtime.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-03T13:35:48.754Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 7003,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 2,
+      "routesOverSuggestedBends": 2,
+      "routesOverSuggestedStretch": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "sim-step",
+            "from": "bridge",
+            "to": "sim",
+            "label": "step(action)",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "right": {
+            "id": "action-return",
+            "from": "bridge",
+            "to": "controllers",
+            "label": "action dict",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "point": [
+            696.325,
+            208
+          ],
+          "sharedNode": "bridge"
+        },
+        {
+          "left": {
+            "id": "action-return",
+            "from": "bridge",
+            "to": "controllers",
+            "label": "action dict",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "right": {
+            "id": "forecast-call",
+            "from": "forecaster",
+            "to": "controllers",
+            "label": "FrozenForecaster.predict()",
+            "collectionIndex": 5,
+            "artifactIndex": 6
+          },
+          "point": [
+            573.9999999999999,
+            408.00000000000006
+          ],
+          "sharedNode": "controllers"
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "sim-step",
+            "from": "bridge",
+            "to": "sim",
+            "label": "step(action)",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "bends": 4,
+          "stretch": 1.33
+        },
+        {
+          "relationship": {
+            "id": "action-return",
+            "from": "bridge",
+            "to": "controllers",
+            "label": "action dict",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "bends": 3,
+          "stretch": 1.415
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "bridge → sim and bridge → controllers cross next to bridge: move node sim or controllers so the two reach bridge from different sides (for example one level with it, one directly above or below it).",
+      "bridge → controllers and forecaster → controllers cross next to controllers: move node bridge or forecaster so the two reach controllers from different sides (for example one level with it, one directly above or below it).",
+      "bridge → sim needs 4 bends: move node bridge or sim so they share a row or column with matching centers, or sit diagonally with a clear corner.",
+      "bridge → controllers needs 3 bends: move node bridge or controllers so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

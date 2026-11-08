@@ -1,0 +1,326 @@
+{
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Single-process Python monolith",
+      "wraps": [
+        "bridge",
+        "controllers",
+        "forecaster",
+        "harness",
+        "report",
+        "sim"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Lab LAN: anonymous MQTT :1883",
+      "wraps": [
+        "broker",
+        "nodes"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Dashboard: localhost-only bind",
+      "wraps": [
+        "dashboard"
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Bridge ticks sim + policy on the 5-min control hook; sim advances 1 min per step",
+        "Hardware-style thermostat cutout 23.5/24.5 C gates delivered cooling + metered power",
+        "Telemetry QoS 0, commands QoS 1 never-retained, retained status + LWT per node",
+        "Subscriptions renew inside on_connect, so every reconnect resubscribes"
+      ],
+      "title": "Sense-decide-actuate loop"
+    },
+    {
+      "dot": "emerald",
+      "items": [
+        "100-run matrix: 5 controllers x 4 scenarios x 5 paired seeds, mean +- std",
+        "Forecast arm (C4-with vs C4-as-C3) + carbon arm (hourly vs flat EF)",
+        "Honest findings: comfort-per-kWh thesis, shifting ~zero, weekend tie",
+        "Heatwave re-checked on 10 seeds: energy and comfort both significant"
+      ],
+      "title": "Evaluation rigor"
+    },
+    {
+      "dot": "amber",
+      "items": [
+        "Hourly emission-factor + ToU tariff series (CEA 0.710 anchor, modelled shape)",
+        "Telemetry CSVs are the experiment record; matrices crash-resume from them",
+        "Frozen HistGB forecaster trains once on C1 telemetry, reused everywhere",
+        "results/ is gitignored except force-added figure PNGs"
+      ],
+      "title": "Data and stores"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "Lab broker is anonymous with TLS commented (Unit-3 note); dashboard never binds 0.0.0.0",
+        "Validation is synthetic timetables + UCI demand-only (no occupancy ground truth)",
+        "Out of scope by decision: MPC/RL, hardware, per-user comfort learning",
+        "Wokwi ESP32 run is manual demo; CI uses the Python shim + contract test"
+      ],
+      "title": "Trust and limits"
+    }
+  ],
+  "components": [
+    {
+      "id": "nodes",
+      "label": "Virtual ESP32 nodes",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "ESP32 shim + .ino sketch",
+      "type": "external"
+    },
+    {
+      "id": "broker",
+      "label": "Mosquitto broker",
+      "pos": [
+        285,
+        120
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "localhost:1883",
+      "tag": "installed binary",
+      "type": "messagebus"
+    },
+    {
+      "id": "bridge",
+      "label": "MQTT bridge",
+      "pos": [
+        510,
+        120
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "iot/bridge.py",
+      "type": "backend"
+    },
+    {
+      "id": "sim",
+      "label": "BuildingSim",
+      "pos": [
+        735,
+        120
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sublabel": "1R1C + thermostat",
+      "tag": "the plant",
+      "type": "backend"
+    },
+    {
+      "id": "harness",
+      "label": "Comparison harness",
+      "pos": [
+        745,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "paired seeds, mean+-std",
+      "type": "backend"
+    },
+    {
+      "id": "report",
+      "label": "Eval report",
+      "pos": [
+        970,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "one-command report",
+      "type": "backend"
+    },
+    {
+      "id": "dashboard",
+      "label": "Streamlit dashboard",
+      "pos": [
+        1200,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "7 tabs incl. 3D",
+      "type": "frontend"
+    },
+    {
+      "id": "controllers",
+      "label": "Controllers C1-C4",
+      "pos": [
+        420,
+        320
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "BasePolicy subclasses",
+      "type": "backend"
+    },
+    {
+      "id": "forecaster",
+      "label": "Frozen forecaster",
+      "pos": [
+        745,
+        520
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "HistGB + LSTM bake-off",
+      "type": "backend"
+    },
+    {
+      "id": "thingspeak",
+      "label": "ThingSpeak",
+      "pos": [
+        970,
+        520
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "manual screenshot",
+      "tag": "optional",
+      "type": "external"
+    },
+    {
+      "id": "twin",
+      "label": "3D building twin",
+      "pos": [
+        1200,
+        520
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sublabel": "Plotly Mesh3d rooms",
+      "type": "frontend"
+    }
+  ],
+  "connections": [
+    {
+      "from": "nodes",
+      "id": "telemetry-pub",
+      "label": "telemetry QoS0",
+      "to": "broker",
+      "variant": "emphasis"
+    },
+    {
+      "from": "broker",
+      "id": "telemetry-route",
+      "label": "building/#",
+      "to": "bridge",
+      "variant": "emphasis"
+    },
+    {
+      "from": "bridge",
+      "fromSide": "bottom",
+      "id": "sim-step",
+      "label": "step(action)",
+      "to": "sim",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "from": "bridge",
+      "fromSide": "bottom",
+      "id": "policy-step",
+      "label": "policy.step(obs)",
+      "to": "controllers",
+      "toSide": "top"
+    },
+    {
+      "from": "bridge",
+      "fromSide": "right",
+      "id": "action-return",
+      "label": "action dict",
+      "to": "controllers",
+      "toSide": "bottom"
+    },
+    {
+      "from": "forecaster",
+      "fromSide": "left",
+      "id": "forecast-call",
+      "label": "FrozenForecaster.predict()",
+      "to": "controllers",
+      "toSide": "right"
+    },
+    {
+      "from": "sim",
+      "id": "frames-out",
+      "label": "frames",
+      "to": "harness",
+      "variant": "emphasis"
+    },
+    {
+      "from": "harness",
+      "id": "matrix-csvs",
+      "label": "matrix CSVs",
+      "to": "report",
+      "variant": "emphasis"
+    },
+    {
+      "from": "report",
+      "id": "figures-tables",
+      "label": "figures+tables",
+      "to": "dashboard",
+      "variant": "emphasis"
+    },
+    {
+      "from": "report",
+      "fromSide": "bottom",
+      "id": "twin-frames",
+      "label": "saved frames to 3D",
+      "to": "twin",
+      "toSide": "top"
+    },
+    {
+      "from": "report",
+      "fromSide": "bottom",
+      "id": "cloud-shot",
+      "label": "optional manual screenshot",
+      "to": "thingspeak",
+      "toSide": "top",
+      "variant": "dashed"
+    }
+  ],
+  "diagram_type": "architecture",
+  "meta": {
+    "output": ".archify/architecture-smart-building-20261003-190508/smart-building-runtime.html",
+    "quality_profile": "showcase",
+    "title": "Smart Building Predictive Control - Runtime Architecture"
+  },
+  "schema_version": 1
+}
