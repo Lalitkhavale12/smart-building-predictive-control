@@ -7,11 +7,11 @@ telemetry plus a final kWh/comfort line.
 Two modes, exit 0 in both (a MODE: line always states which):
 
 - LIVE (``MODE: live-broker``): a real broker answers on localhost:1883 and
-  paho-mqtt imports — one Esp32Node per room + TelemetryBridge over real
+  paho-mqtt imports â€” one Esp32Node per room + TelemetryBridge over real
   paho wrappers, same contract the integration tests assert
   (``tests/test_integration_mqtt.py``).
 - SIMULATED (``MODE: simulated``): no broker (this laptop has Mosquitto NOT
-  installed) — identical node/bridge/policy/sim wiring over
+  installed) â€” identical node/bridge/policy/sim wiring over
   ``tests.fakes.FakeBroker``, the same double the bridge/fault suites prove
   (``tests/test_bridge.py``, ``tests/test_faults.py``).
 
@@ -44,7 +44,7 @@ BROKER_HOST, BROKER_PORT = "localhost", 1883
 
 
 def broker_present(timeout=1.0):
-    """Read-only TCP probe — no publishes, no side effects."""
+    """Read-only TCP probe â€” no publishes, no side effects."""
     try:
         with socket.create_connection((BROKER_HOST, BROKER_PORT), timeout=timeout):
             return True
@@ -64,13 +64,12 @@ def run_demo(steps, scenario, seed, live, start_minute=0):
     """Wire sim + 4 nodes + C3 bridge; step N times. Returns (energy_kwh, comfort)."""
     sim = BuildingSim(rng=np.random.default_rng(seed), scenario=scenario)
     obs = sim.reset(seed=seed)
-    policy = SetbackPolicy()  # C3 setback — zero-config, the honest baseline
+    policy = SetbackPolicy()  # C3 setback â€” zero-config, the honest baseline
 
-    off = {room: {"hvac": "OFF", "light": 0} for room in cfg.ROOMS}
-    while sim.minute < start_minute:  # sim-time fast-forward (OFF hold, no physics change)
-        obs = sim.step(off)
+    while sim.minute < start_minute:  # fast-forward under the same C3 policy,
+        obs = sim.step(policy.step(obs))  # so demo state matches a recorded run
     if start_minute:
-        print(f"fast-forwarded to minute={sim.minute} (OFF hold); demo covers next {steps} steps")
+        print(f"fast-forwarded to minute={sim.minute} (C3 policy); demo covers next {steps} steps")
 
     if live:
         factory = None  # default paho factory inside MqttClientWrapper
@@ -128,7 +127,7 @@ def main():
                     choices=["weekday", "weekend", "heatwave", "exam-day"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--start-minute", type=int, default=0,
-                    help="sim-time fast-forward under OFF hold before the demo steps "
+                    help="sim-time fast-forward under the C3 policy before the demo steps "
                          "(e.g. 530 catches the ~09:00 weekday arrival)")
     args = ap.parse_args()
     wx.validate_scenario(args.scenario)
@@ -138,7 +137,7 @@ def main():
         print("MODE: live-broker (localhost:1883, paho-mqtt, real roundtrip)")
     else:
         reason = "no broker on localhost:1883" if not broker_present() else "paho-mqtt not installed"
-        print(f"MODE: simulated (FakeBroker — {reason}; unit suite covers the live path)")
+        print(f"MODE: simulated (FakeBroker â€” {reason}; unit suite covers the live path)")
     kwh, comfort = run_demo(args.steps, args.scenario, args.seed, live, args.start_minute)
     c_str = f"{comfort:.1f}%" if comfort == comfort else "n/a (no occupied steps)"
     print(f"RESULT steps={args.steps} scenario={args.scenario} seed={args.seed} "

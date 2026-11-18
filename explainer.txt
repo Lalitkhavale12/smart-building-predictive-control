@@ -1,0 +1,378 @@
+SMART-BUILDING PREDICTIVE CONTROL — PROJECT EXPLAINER
+=====================================================
+Plain-language guide for the viva, the demo and any teammate joining late.
+Every number in here is produced by this repo; nothing is estimated.
+
+
+1. WHAT THIS PROJECT IS
+-----------------------
+A simulated four-room building that we instrument like a real one, control
+with a forecast, and judge honestly against three simpler controllers.
+
+  Building  : 4 rooms (2 classrooms, 1 office, 1 lab), 1-minute steps,
+              1 simulated day per run (1440 steps), 4 scenarios.
+  Sensors   : virtual ESP32 nodes publish temperature, humidity, occupancy,
+              HVAC state and power over MQTT — the same contract real
+              hardware would use.
+  Brain     : a controller picks HVAC level (OFF / REDUCED / ON) and lights
+              per room, every 5 minutes.
+  Score     : energy (kWh), cost (Rs, time-of-day tariff), CO2 (kg, hourly
+              grid factor), comfort (% of occupied room-minutes inside a
+              temperature + humidity band).
+
+The point is not "AI saves energy". The point is a fair, reproducible
+comparison with a result we are willing to defend.
+
+
+2. THE QUESTION AND THE HONEST ANSWER
+-------------------------------------
+Question: if you can forecast occupancy 30-60 minutes ahead, does that let
+you run the building better than a fixed schedule, a simple occupancy rule,
+or a plain setback thermostat?
+
+Answer, after fixing a thermal-model bug and re-measuring everything:
+
+  Predictive control (C4) buys COMFORT at a small energy cost.
+  Weekday   : +3.0 comfort points vs C3, energy -0.28% (it spends more).
+  Heatwave  : +6.1 comfort points vs C3, energy -2.49%, +0.68 kWh.
+  Weekend   : a tie (building is empty either way).
+  Exam day  : +4.7 comfort points vs C3 (75.2% vs 70.5%), energy -0.77%.
+
+So the thesis we defend is comfort-per-kWh, not kWh saved. There is also no
+off-peak load shifting: peak-share moved 0.071 -> 0.080, i.e. not at all in
+the useful direction. That finding is documented, not hidden.
+
+
+3. THE PHYSICAL SYSTEM (what the sim pretends to be)
+----------------------------------------------------
+Each room is a 1R1C lumped model — one resistance to outside, one thermal
+capacity inside:
+
+  T_in(next) = T_in + dt/C * [ (T_out - T_in)/R + Q_occupants + Q_hvac ]
+
+  R = 30 degC/kW, C = 0.12 kWh/K  -> time constant tau = R*C = 3.6 h
+  (a light building; the 2-5 h band is the literature range)
+  Occupants add 0.10 kW each (about 100 W/person, ASHRAE).
+  HVAC removes 3.5 kW (ON) or 1.2 kW (REDUCED); OFF removes nothing.
+  Electrical power = |Q_hvac| / COP + 0.20 kW per lit room, COP = 3.0.
+  Outside temperature: daily sine, mean 31 degC, +/-4 degC, peak 15:00,
+  plus seeded noise; heatwave adds +4 degC.
+  Humidity: seeded random walk, calibrated so ~85% of steps land in the
+  30-60% band.
+
+Why this matters in the viva: the model is simple on purpose. A simple model
+whose parameters you can defend beats a fancy model you cannot. And because
+it is seeded, every number reproduces exactly.
+
+
+4. THE DATA PIPELINE (how a room becomes a number)
+--------------------------------------------------
+  weather + timetable
+        |
+        v
+  sim/simulator.py  (4 rooms, physics, step())
+        |
+        v
+  iot/node.py  (virtual ESP32) --publish JSON--> MQTT topic
+        |                                        building/<room>/telemetry
+        v
+  Mosquitto broker on localhost:1883   <-- iot/esp32_node.ino (Wokwi, real
+        |                                    firmware, same topics)
+        v
+  iot/bridge.py  (subscribes to building/+/telemetry, drains the queue)
+        |
+        v
+  ctrl/*  (policy picks HVAC + lights per room)
+        |
+        v
+  publish command QoS 1, not retained --> building/<room>/command
+        |
+        v
+  sim.step(action)  -> next state, logged to CSV by sim/logger.py
+
+Two paths exist and both are exercised:
+  - Direct path: sim + policy in-process (eval/matrix.py) — used for the
+    full 4 scenarios x 4 controllers x 5 seeds matrix.
+  - MQTT path: sim + nodes + bridge over a real broker — used by
+    scripts/live_broker_demo.py and tests/test_integration_mqtt.py.
+
+The MQTT path is what makes this an IoT project rather than a simulation
+exercise: the controller talks to the building over the same protocol a
+real deployment would use, and the test suite proves the roundtrip.
+
+
+5. IoT TERMS, PLAINLY
+---------------------
+MQTT            A tiny publish/subscribe messaging protocol built for slow,
+                unreliable devices. One small header, text payloads.
+Broker          The post office. Devices never talk to each other directly;
+                they hand messages to the broker, which forwards them.
+                Here: Mosquitto, running locally on port 1883.
+Topic           The address on the broker, a slash-separated string.
+                building/classroom_A/telemetry means "readings from room A".
+                Wildcards: + matches one level, # matches the rest.
+Publish         Send a message to a topic.
+Subscribe       Ask the broker to deliver every message on a topic (or a
+                wildcard pattern) to you.
+Payload         The message body. Ours is JSON with the telemetry fields.
+QoS             Quality of Service, delivery guarantee level.
+                  QoS 0 = fire and forget (telemetry; a lost reading is fine)
+                  QoS 1 = at least once (commands; duplicates are harmless
+                          because setting a setpoint twice is idempotent)
+Retained        The broker keeps the last message on a topic and hands it to
+                any new subscriber. Used for device status, never for
+                telemetry (a retained stale reading would replay forever).
+LWT             Last Will and Testament. A message the broker publishes on
+                your behalf if you disconnect without saying goodbye. Our
+                nodes use it to publish status=offline — that is the fault
+                demo in section 4 of DEMO-CHECKLIST.md.
+Client ID       Unique name a device uses on the broker.
+Node            One physical (or virtual) device in the building. Here: one
+                per room, publishing that room's sensors.
+Gateway/Bridge  Software that connects two worlds. iot/bridge.py connects
+                MQTT to the simulator: readings in, commands out.
+Telemetry       Measurements flowing up from devices (temperature, power).
+Command         Instruction flowing down to devices (set HVAC, set lights).
+ESP32           Cheap Wi-Fi microcontroller, the usual hobby/project choice
+                for a sensor node. We do not own hardware; iot/esp32_node.ino
+                is real firmware for it.
+Wokwi           Browser-based electronics simulator that runs real ESP32
+                firmware. That is how the "hardware" runs without hardware.
+ThingSpeak      Free cloud service that stores a channel of numeric fields
+                and draws charts. Used only for the syllabus IoT-cloud
+                screenshot; it is not part of the control loop.
+MQTT Explorer   Desktop app that shows the live topic tree. Optional, makes
+                the demo visual: watch telemetry tick and status go offline.
+
+
+6. ENERGY + CONTROL TERMS, PLAINLY
+----------------------------------
+Controller      The rule that decides HVAC level and lights. We compare four:
+  C1 fixed schedule   HVAC on during fixed hours, no sensing at all.
+  C2 occupancy rule   HVAC off after 15 continuous empty minutes.
+  C3 setback         Setpoint with a deadband; the strongest simple baseline
+                      and the honest yardstick.
+  C4 predictive       C3 plus a forecast overlay: pre-cool before people
+                      arrive, release early when they leave.
+Setpoint        The temperature the controller aims for.
+Deadband        A tolerance band around the setpoint so the HVAC does not
+                chatter on and off every minute. Ours is what makes power
+                cycle visibly in the demo.
+Setback         Letting the temperature drift while the room is empty instead
+                of holding it comfortable for nobody.
+Pre-cooling     Cooling before occupants arrive, so the room is comfortable
+                when they walk in. This is where C4's comfort gain comes from.
+Forecast horizon  How far ahead the model predicts. Ours: 30 and 60 minutes.
+R^2             Fraction of variance explained by a forecast. Ours: 0.9818
+                (30 min) and 0.9834 (60 min) for occupancy.
+Persistence baseline  "Tomorrow equals today" — the naive forecast every model
+                must beat. Beating persistence is the minimum bar, not a win.
+Ablation        Removing one component to see if it mattered. Forecast off
+                collapses C4 exactly onto C3 — proof the overlay is the only
+                difference.
+Pareto front    The set of options where you cannot improve one metric
+                without worsening another. C4 sits on the comfort side.
+Comfort band    Occupied room-minutes with 22.0-26.0 degC AND 30-60% RH.
+                Comfort % = band steps / occupied steps.
+COP             Coefficient of Performance: cooling delivered per unit of
+                electricity. COP 3.0 means 3 kW of cooling per 1 kW electric.
+ToU tariff      Time-of-day electricity price. Ours: MSEDCL commercial slabs
+                with a ~Rs 9/kWh base and adders (+1.10 in the 18-22h peak,
+                -1.50 at night), so shifting load is worth money if you can.
+Emission factor Hourly kg CO2 per kWh from the grid. Ours is anchored to the
+                CEA CO2 Baseline Database v21.0 (0.710 tCO2/MWh, FY2024-25)
+                with a modelled daily shape. There is no flat constant
+                anywhere in the code — a test enforces that, because a flat
+                factor would make any shifting analysis meaningless.
+
+
+7. FILE-BY-FILE MAP
+-------------------
+Root
+  README.md              Project front page: what it is, results, how to run.
+  REPORT.md              The academic report: method, model, results, limits.
+  REPRODUCE.md           Fresh clone -> full report in one command.
+  DEMO-CHECKLIST.md      15-minute demo script with fallbacks and expected
+                         output (rehearsed).
+  SHIFTING-FINDING.md    The negative result: no off-peak load shifting.
+  requirements.txt       Pinned Python dependencies.
+  mosquitto.conf         Broker config: local listener 1883, anonymous, TLS
+                         block commented out (kept for the Unit-3 note).
+  .gitignore             Ignores results/, caches, .env, OS junk.
+  explainer.txt          This file.
+
+sim/  — the building and its physics. No knowledge of MQTT or ML.
+  config.py              Every constant: rooms, dt=60 s, R, C, COP, weather,
+                         scenarios, seeds, comfort band. Nothing hardcoded
+                         elsewhere.
+  thermal.py             One-room 1R1C step, explicit Euler.
+  weather.py             Outdoor temperature + humidity series per scenario.
+  occupancy.py           Seeded timetables per room and scenario (arrival,
+                         departure, absence probability, edge jitter).
+  simulator.py           BuildingSim: reset() / step(action) over 4 rooms,
+                         returns observations, applies the 5-step control hook.
+  grid.py                Hourly CO2 factor + ToU price series.
+  metrics.py             comfort_flag / comfort_pct / energy_kwh.
+  logger.py              Telemetry CSV writer (fixed column order).
+  summary.py             Multi-seed aggregation helpers.
+  run.py                 CLI: python -m sim.run --scenario weekday --days 1
+  policy.py              Policy interface stub.
+
+iot/  — the device + messaging layer. What makes it IoT.
+  topics.py              Topic strings and helpers: THE contract. One place,
+                         imported by bridge, nodes and tests.
+  mqtt_client.py         Thin testable wrapper over paho-mqtt (v2 callback
+                         API), so tests can swap in a fake.
+  node.py                Virtual ESP32 node: publishes telemetry JSON,
+                         subscribes to its own command topic, holds state.
+  bridge.py              Subscribes to building/+/telemetry, converts to sim
+                         observations, asks the policy, publishes commands
+                         QoS 1 (never retained), steps the sim.
+  esp32_node.ino         Real ESP32 firmware for Wokwi: same topics, same
+                         JSON keys, delay(60000), 512 B buffer.
+
+ctrl/  — the controllers.
+  baselines.py           C1 fixed schedule, C2 occupancy rule, C3 setback.
+  schedules.py           The fixed-schedule tables C1 uses.
+  predictive.py          C4: C3 plus forecast overlay (pre-cool / early off).
+                         Fallback to C3 when no forecast is available.
+  harness.py             Run any policy over the sim directly (no MQTT).
+  compare.py             Paired-seed comparison CLI.
+
+ml/  — forecasting.
+  forecast.py            Walk-forward forecaster, 30/60 min horizons, strict
+                         no-leakage split.
+  bakeoff.py             Fixed-budget model bake-off: persistence vs random
+                         forest vs HistGradientBoosting vs LSTM.
+  lstm.py                Small capped LSTM (Keras), trained on CPU.
+  uci.py                 Adapter for the UCI Appliances dataset (external
+                         validation, FOR-04).
+
+eval/  — the measurement machinery.
+  matrix.py              Full matrix driver: 4 scenarios x 4 controllers x
+                         5 seeds, writes results/full_matrix/.
+  sweep.py               C4 threshold sweep (tuning).
+  ablate.py              Ablation arms: forecast off, carbon signal off.
+  sensitivity.py         Parameter sensitivity recomputes.
+  figures.py             Report figures G1-G6 from saved CSVs.
+  report.py              One command: matrix + tables + figures.
+
+dashboard/  — the UI.
+  app.py                 Streamlit dashboard, 7 tabs: overview, 24h shape,
+                         savings, trade-off, ablation, forecast, 3D building.
+                         Reads saved CSVs only; never runs the sim live.
+  style.css              Card styling.
+
+viz/
+  building3d.py          3D building twin fed by saved telemetry (Plotly).
+
+scripts/
+  live_broker_demo.py    The demo: sim + 4 nodes + C3 over a real broker,
+                         30 steps, prints per-step telemetry and a result
+                         line. Falls back to a fake broker if none is up.
+  capture_dashboard.py   Scripted screenshot for figure G7.
+  wavea_spot.py          Ad-hoc spot check (Wave A).
+  waveb_heatwave10.py    C3 vs tuned C4 over heatwave seeds 0-9.
+
+data/
+  grid_hourly.csv        The hourly CO2 + tariff series (anchored, audited).
+
+docs/
+  protocols.md           Why MQTT over HTTP/CoAP, topic design, QoS choices.
+  thingspeak-guide.md    Cloud screenshot path (manual, optional).
+  PHASE-RECALIBRATION-A.md  What was wrong in the thermal model and the fix.
+  PHASE-RECALIBRATION-B.md  Re-measured results after the fix.
+
+design-system/
+  smart-building-dashboard/MASTER.md   Palette, type, card rules for the UI.
+
+.archify/
+  architecture-.../smart-building-runtime.html   Interactive architecture
+                         diagram (open in a browser), plus its receipts.
+
+.streamlit/config.toml  Theme + localhost bind for the dashboard.
+
+tests/  — 27 files, 129 tests, all brokerless except the live gate.
+  conftest.py            Shared fixtures; silences the py-version notice.
+  fakes.py               In-process fake broker + client.
+  test_topics.py         Topic contract.
+  test_mqtt_client.py    Wrapper behaviour against the fake.
+  test_bridge.py         Node <-> bridge roundtrip.
+  test_faults.py         Kill a node, dropped messages, reconnect.
+  test_sketch_contract.py Firmware constants match the Python contract.
+  test_integration_mqtt.py Real-broker gate (skips cleanly without one).
+  test_thermal.py        Physics sanity numbers.
+  test_reproducibility.py Seeded determinism.
+  test_logging.py        CSV schema + CLI.
+  test_metrics.py        Comfort/energy math.
+  test_grid.py           CO2 + tariff series gates.
+  test_baselines.py      C1/C2/C3 behaviour.
+  test_harness.py        Harness + C3 tracer.
+  test_predictive.py     C4 identity-without-forecast + overlay.
+  test_policy_bridge.py  Policy behind MQTT.
+  test_c4_tuning.py      Tuning regressions.
+  test_forecast.py       Leakage guard + forecast skill.
+  test_bakeoff.py        Bake-off + LSTM roundtrip.
+  test_uci_adapter.py    External dataset adapter.
+  test_dashboard.py      Dashboard smoke test.
+  test_dashboard_style.py UI style guards.
+  test_building3d.py     3D twin smoke test.
+  test_reproduce.py      End-to-end reproduce smoke test.
+  test_boundaries.py     Architecture guard: sim/ must not import ctrl/ml/iot.
+
+
+8. WHERE THE RESULTS LIVE
+-------------------------
+results/ is generated, gitignored, and rebuilt on demand.
+  results/full_matrix/<controller>/<scenario>/seed<NN>/telemetry.csv
+                         One run's per-room 1-minute telemetry.
+  results/report_tables/ 11 CSVs: the tables in REPORT.md.
+  results/figures/       G1-G7 PNGs. Only fig_g7_dashboard.png is committed,
+                         as the frozen dashboard screenshot.
+  results/thingspeak_upload.csv  Building-aggregated day for the cloud upload.
+
+Committed on purpose: the architecture diagram, the design system, the
+recalibration reports and one dashboard figure. Everything else regenerates.
+
+
+9. COMMANDS YOU NEED
+--------------------
+  python -m pytest -q                                  # 129 tests, ~80 s
+  python -m sim.run --scenario weekday --days 1        # one run -> CSV
+  python scripts/live_broker_demo.py --steps 30 --scenario weekday --start-minute 530
+  streamlit run dashboard/app.py                       # http://localhost:8501
+  python -m eval.report                                # matrix + figures + tables
+  pytest tests/test_faults.py tests/test_bridge.py -q   # fault demo, ~1 s
+
+Broker, when it is not already running (it is NOT on PATH):
+  & "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto.conf -v
+
+
+10. NUMBERS TO REMEMBER
+-----------------------
+  Rooms / step / day       4 rooms, 60 s steps, 1440 steps per day
+  Thermal time constant    3.6 h (R=30 degC/kW, C=0.12 kWh/K)
+  HVAC levels              ON -3.5 kW, REDUCED -1.2 kW, OFF 0; COP 3.0
+  Comfort band             22-26 degC and 30-60% RH, occupied minutes only
+  Controllers              C1 schedule, C2 occupancy rule, C3 setback, C4 C3+forecast
+  Seeds                    5 paired seeds (0-4)
+  Forecast R^2             0.9818 (30 min), 0.9834 (60 min) occupancy
+  Weekday C3 vs C4         25.16 vs 25.23 kWh; comfort 68.3% vs 71.3%
+  Heatwave C3 vs C4        27.39 vs 28.08 kWh; comfort 64.2% vs 70.3%
+  Peak-share               0.071 -> 0.080 (no shifting achieved)
+  Tests                    129 passing, 5 Keras deprecation warnings
+
+
+11. KNOWN LIMITS (say these before someone else does)
+-----------------------------------------------------
+  - One day per run, one building, one climate. No seasonal sweep.
+  - 1R1C per room: no walls, no solar gain through glazing, no latent load,
+    no HVAC ramp or capacity limit beyond the fixed levels.
+  - Occupancy is generated, not observed. The forecast is good because the
+    process is learnable; real occupancy is messier.
+  - C4 does not save energy. It trades a little energy for comfort. Anyone
+    claiming otherwise has not read G2.
+  - No load shifting: pre-cooling is timed for comfort, not for tariff.
+  - The cloud (ThingSpeak) path is a reporting artifact, not part of control.
+  - Hardware is simulated (Wokwi). No physical ESP32 or meter was used, and
+    the report says so.

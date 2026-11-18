@@ -7,11 +7,15 @@ result you did not just run.
 ## 0. Setup (before the room, ~3 min)
 
 1. `pip install -r requirements.txt` — Python 3.12 for TF-strict training
-   machines, else the pinned interpreter in `REPRODUCE.md`.
+   machines, else the pinned interpreter in `REPRODUCE.md`. Rehearsed on this
+   laptop: Python 3.14.6 + TensorFlow 2.22.0-rc0 pass all 129 tests, so no
+   second environment is needed for the demo.
 2. Install Mosquitto 2.0.22 (Windows x64):
    `https://mosquitto.org/files/binary/win64/mosquitto-2.0.22-install-windows-x64.exe`
-3. Start the broker with the repo config (keep this window visible):
-   `mosquitto -c mosquitto.conf -v`
+3. Start the broker with the repo config (keep this window visible). The
+   binary is **not on PATH** after install — call it by full path or it looks
+   like a missing broker:
+   `& "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto.conf -v`
    Expect `Opening ipv4 listen socket on port 1883`. Config is local-only,
    anonymous (`mosquitto.conf`); the TLS block stays commented (Unit-3 note).
 4. Pre-generate the report once: `python -m eval.report` → 7 figures in
@@ -24,15 +28,25 @@ result you did not just run.
 
 `python scripts/live_broker_demo.py --steps 30 --scenario weekday --start-minute 530`
 
-- `--start-minute 530` fast-forwards sim-time under OFF hold to just before
-  the ~09:00 arrival, so the 30 demo steps show occupied rooms, ON commands,
-  and the thermostat cutout cycling power (no physics change, stated on screen).
+- `--start-minute 530` fast-forwards sim-time under the same C3 policy to just
+  before the ~09:00 arrival, so the demo state matches a recorded run and the
+  30 demo steps show occupied rooms, ON commands, and the thermostat cutout
+  cycling power.
+- Rehearsed output to compare against (weekday, seed 0, broker up):
+  `MODE: live-broker` / `fast-forwarded to minute=530 (C3 policy)` /
+  step 0 `occ=49 T_in_mean=26.71C power=2.733kW` /
+  step 29 `occ=47 T_in_mean=25.25C power=1.767kW` /
+  `RESULT … energy_kWh=1.4728 comfort=34.5%`.
+- **The RESULT comfort is the 30-minute arrival transient, not the day's
+  comfort.** Rooms come out of the setback night warm (26.7 °C mean), so this
+  window reads 34.5% while the full weekday C3 day in `REPORT.md` is 68.3%.
+  Say that before anyone asks; the same window is why C4's pre-cooling pays.
 - Watch for the `MODE:` line first — `live-broker` with Mosquitto up,
   `simulated (FakeBroker …)` without. Name it out loud either way.
 - Per-step lines: occupancy → C3 setback commands → sim steps, telemetry
   flowing `building/+/telemetry`, commands QoS 1 never-retained
   (`iot/topics.py` is the single source of truth).
-- Final `RESULT` line: energy kWh + comfort % for the 12 steps.
+- Final `RESULT` line: energy kWh + comfort % for the demo steps.
 - (Optional, MQTT Explorer open on `building/#`: telemetry ticking,
   `building/<room>/status` retained online.)
 
@@ -75,7 +89,8 @@ tariff-timed. Say it, don't hide it.
 
 ## 4. Kill-a-node fault demo (~2 min)
 
-`pytest tests/test_faults.py tests/test_bridge.py -q` (~10 s, brokerless)
+`pytest tests/test_faults.py tests/test_bridge.py -q` (~1 s, brokerless —
+rehearsed: 7 passed)
 
 - Narrate: 4-room fleet, kill room 2 → 3 survivors × 3 cycles green, retained
   `status` reads offline (LWT fired), `sim.minute` keeps stepping.
