@@ -24,9 +24,18 @@ presence, last-will — while the sensing stays simulated. See `README.md`
 1. Open <https://wokwi.com>, **New Project → ESP32** (Arduino C++).
 2. Paste `iot/esp32_node.ino` over `sketch.ino`. Do not edit it — the topic
    literals are pinned to `iot/topics.py` by `tests/test_sketch_contract.py`.
-3. Add `diagram.json` and `libraries.txt` from this folder. If the part IDs
-   differ in your Wokwi version, wire the DHT22 once in the GUI and let Wokwi
-   rewrite `diagram.json`.
+3. Replace the contents of the two project files that Wokwi creates by
+   default — **no upload needed** (importing from disk is a paid feature;
+   editing in the browser is free). Click each file in the left file list,
+   `Ctrl+A`, `Ctrl+V`:
+
+   - `libraries.txt` ← `PubSubClient` and `DHT sensor library`, one per line
+   - `diagram.json` ← this folder's copy
+
+   `libraries.txt` is optional: Wokwi auto-installs both libraries from the
+   `#include` lines because both are in its registry, so the file only pins
+   versions. If the part IDs differ in your Wokwi version, wire the DHT22 once
+   in the GUI and let Wokwi rewrite `diagram.json`.
 4. Press **F1 → "Enable Private Wokwi IoT Gateway"**. Without this,
    `host.wokwi.internal` does not resolve to your laptop and the board cannot
    reach the local broker.
