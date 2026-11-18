@@ -63,18 +63,18 @@ accounts or sends network traffic by itself.
 Use this path for the report screenshot. No API key in the repo, no network
 from Python, fully reproducible from committed CSVs.
 
-1. Produce the CSV `[done in repo]`:
+1. Produce the CSV `[done in repo]`. Use a controlled run, so the channel shows
+   a real controller and in-range temperatures:
 
    ```bash
-   python -m sim.run --scenario weekday --days 1 --seed 0
+   python -m eval.matrix --controllers c4-with --scenarios weekday --seeds 1
    ```
 
-   Output: `results/weekday/seed00/telemetry.csv` (+ `run_meta.json`).
-   For controller-comparison data use the matrix output instead:
-   `results/full_matrix/<controller>/<scenario>/seed<NN>/telemetry.csv`
-   (e.g. `results/full_matrix/c4-with/weekday/seed00/telemetry.csv`),
-   produced by `eval/matrix.py` via `python -m eval.report`.
-   Both files carry the exact `TELEMETRY_COLUMNS` order from §1.
+   Output: `results/full_matrix/c4-with/weekday/seed00/telemetry.csv`.
+   (`python -m sim.run --scenario weekday --days 1 --seed 0` writes
+   `results/weekday/seed00/telemetry.csv` too, but it holds the HVAC off, so
+   rooms overheat - do not upload that one.)
+   All of these carry the exact `TELEMETRY_COLUMNS` order from §1.
 2. Aggregate (only for the recommended single-channel upload) `[done in repo]`:
 
    ```bash

@@ -5,8 +5,16 @@
 
 Drives the Plan 01 BuildingSim loop with the Plan 02 scenario world, holding
 the Plan 01 5-min control-hook convention (policy called every 5th step,
-action held between). Phase-1 policy is AlwaysOffPolicy only — no controllers,
+action held between). Phase-1 policy is AlwaysOffPolicy only - no controllers,
 no MQTT bridging, no dashboard code (phase boundary).
+
+WARNING: with no HVAC the plant is an uncontrolled probe. An occupied classroom
+holds ~2.7 kW of gains against R = 30 C/kW, so it equilibrates far above the
+comfort band (94 C by mid-morning). That is the physics, not a bug - and it is
+why sim/ is forbidden from reaching into the ctrl package (enforced by
+tests/test_boundaries.py). For a controlled single run use:
+
+  python -m eval.matrix --controllers c3 --scenarios weekday --seeds 1
 
 Threat T-03-01: --out is constrained under results/; parent-dir segments
 are rejected before anything is written.
@@ -59,7 +67,9 @@ def run(scenario, days, seed, out_dir):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Run the building simulator")
+    parser = argparse.ArgumentParser(
+        description="Run the building simulator with no controller (uncontrolled probe)"
+    )
     parser.add_argument("--scenario", choices=list(cfg.SCENARIOS), required=True)
     parser.add_argument("--days", type=int, default=1)
     parser.add_argument("--seed", type=int, default=0)
@@ -71,6 +81,11 @@ def main(argv=None):
     out_dir = resolve_out(out)
     telemetry_path, meta_path = run(args.scenario, args.days, args.seed, out_dir)
     print(f"wrote {telemetry_path} + {meta_path}")
+    print(
+        "note: no controller is active, so rooms drift far above the comfort band. "
+        "For a controlled run: python -m eval.matrix --controllers c3 "
+        "--scenarios weekday --seeds 1"
+    )
     return telemetry_path, meta_path
 
 

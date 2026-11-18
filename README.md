@@ -120,7 +120,10 @@ pytest tests/ -q
 ## Usage
 
 ```bash
-# one simulation
+# one controlled simulation (C3, weekday, seed 0)
+python -m eval.matrix --controllers c3 --scenarios weekday --seeds 1
+
+# uncontrolled plant probe (no HVAC, rooms overheat by design - not for results)
 python -m sim.run --scenario weekday --days 1 --seed 0
 
 # full experiment matrix (4 controllers x 4 scenarios x 5 seeds)

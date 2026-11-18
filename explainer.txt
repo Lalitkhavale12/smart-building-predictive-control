@@ -57,8 +57,11 @@ capacity inside:
   Electrical power = |Q_hvac| / COP + 0.20 kW per lit room, COP = 3.0.
   Outside temperature: daily sine, mean 31 degC, +/-4 degC, peak 15:00,
   plus seeded noise; heatwave adds +4 degC.
-  Humidity: seeded random walk, calibrated so ~85% of steps land in the
-  30-60% band.
+  Humidity: seeded random walk from 52% in 0.3-point steps, clipped at 70%.
+  Measured result: RH sits inside 30-60% for about 72% of occupied minutes
+  (weekday C3) - and identically for every controller, because nothing in
+  the plant dehumidifies. That 72% is the ceiling on comfort; the
+  controller only moves the temperature part.
 
 Why this matters in the viva: the model is simple on purpose. A simple model
 whose parameters you can defend beats a fancy model you cannot. And because

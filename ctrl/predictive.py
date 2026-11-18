@@ -101,7 +101,7 @@ class PredictivePolicy(SetbackPolicy):
     -12.9%/-25.3% energy win over the Phase-4 stock with comfort
     non-regression on the pre-thermostat plant; Wave-B re-measurement on
     thermostat physics shows the overlay now trades +energy for +comfort —
-    see .planning/PHASE-RECALIBRATION-B.md; pass explicit ``occ_threshold=1, precool_level="ON"``
+    see docs/PHASE-RECALIBRATION-B.md; pass explicit ``occ_threshold=1, precool_level="ON"``
     for the legacy stock behavior).
 
     Overlay law, applied on top of the C3 base action per empty room:

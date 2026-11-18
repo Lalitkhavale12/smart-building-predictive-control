@@ -37,6 +37,25 @@ No image file in this plan is a dashboard screenshot (T-05-09).
 
 GRAPH_KEYS = ("g1", "g2", "g3", "g4", "g5", "g6", "g7")
 
+# 5 controllers x 4 scenarios. A subset run (e.g. the README's single-run
+# command) leaves a partial summary.csv behind; treating it as "present" makes
+# fig_g2 crash on a missing controller row, so completeness is checked instead.
+EXPECTED_SUMMARY_ROWS = 20
+
+
+def _summary_complete():
+    """True only when summary.csv covers every controller x scenario."""
+    path = pathlib.Path("results/full_matrix/summary.csv")
+    if not path.exists():
+        return False
+    try:
+        frame = pd.read_csv(path)
+    except Exception:
+        return False
+    if not {"controller", "scenario"} <= set(frame.columns):
+        return False
+    return len(frame.drop_duplicates(["controller", "scenario"])) >= EXPECTED_SUMMARY_ROWS
+
 
 def ensure_pred_csv():
     """Regenerate the holdout pred CSV from the frozen forecaster if absent."""
@@ -55,21 +74,23 @@ def ensure_pred_csv():
 
 
 def ensure_inputs():
-    """Re-run only missing matrix/sweep/ablation inputs with plan defaults."""
-    missing = [p for p in ("results/full_matrix/summary.csv",
-                           "results/tuning_sweep.csv",
+    """Re-run only missing or incomplete matrix/sweep/ablation inputs."""
+    missing = [p for p in ("results/tuning_sweep.csv",
                            "results/tuning_sweep_band.csv",
                            "results/ablation.csv",
                            "results/sensitivity.csv")
                if not pathlib.Path(p).exists()]
-    if not missing:
+    matrix_partial = not _summary_complete()
+    if not missing and not matrix_partial:
         return
-    print(f"missing inputs: {missing} — regenerating with plan defaults")
-    if "results/full_matrix/summary.csv" in missing:
+    if matrix_partial:
+        print("matrix summary missing or incomplete - rebuilding all 20 runs")
         from eval.matrix import main as matrix_main
         matrix_main(["--controllers", "c1,c2,c3,c4-with,c4-as-c3",
                      "--scenarios", "weekday,weekend,heatwave,exam-day",
                      "--seeds", "5"])
+    if missing:
+        print(f"missing inputs: {missing} - regenerating with plan defaults")
     if ("results/tuning_sweep.csv" in missing
             or "results/tuning_sweep_band.csv" in missing):
         from eval.sweep import main as sweep_main

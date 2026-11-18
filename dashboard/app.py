@@ -258,5 +258,5 @@ st.divider()
 st.caption(
     "Honesty note: savings come from using less energy everywhere, "
     "not from off-peak shifting — see SHIFTING-FINDING.md "
-    "(.planning/phases/05-carbon-economics-full-evaluation/SHIFTING-FINDING.md)."
+    "at the repo root."
 )
