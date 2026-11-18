@@ -1,15 +1,15 @@
-# Carbon- and Comfort-Aware Predictive Control for Smart Buildings
+﻿# Carbon- and Comfort-Aware Predictive Control for Smart Buildings
 
 A simulated four-room building where virtual ESP32 sensors publish occupancy,
 temperature, humidity and power over MQTT, a machine-learning forecaster predicts
-occupancy and demand 30–60 minutes ahead, and a predictive controller schedules
+occupancy and demand 30â€“60 minutes ahead, and a predictive controller schedules
 HVAC and lighting from that forecast.
 
-Course project for **MM0402A — IoT and Sustainability** (Group 5, guide
+Course project for **MM0402A â€” IoT and Sustainability** (Group 5, guide
 Prof. Vijaykumar Ghule).
 
-> **Headline finding — the honest version.** The predictive controller does
-> **not** beat fixed schedules on energy. It spends **0.3–2.5 % more energy** than
+> **Headline finding â€” the honest version.** The predictive controller does
+> **not** beat fixed schedules on energy. It spends **0.3â€“2.5 % more energy** than
 > the tuned setback baseline and buys **+3 to +6 percentage points of comfort-band
 > compliance** in return. Two simpler baselines are cheaper; neither holds comfort
 > as well. Carbon awareness did not shift load off-peak. Details in
@@ -19,8 +19,8 @@ Prof. Vijaykumar Ghule).
 
 ## Results
 
-4 scenarios × 4 controllers × 5 random seeds. Comfort = share of occupied
-minutes inside 22–26 °C and 30–60 % RH.
+4 scenarios Ã— 4 controllers Ã— 5 random seeds. Comfort = share of occupied
+minutes inside 22â€“26 Â°C and 30â€“60 % RH.
 
 | Scenario | C4 energy (kWh) | Extra energy vs C3 | Comfort gain vs C3 | C4 comfort |
 |---|---|---|---|---|
@@ -29,8 +29,8 @@ minutes inside 22–26 °C and 30–60 % RH.
 | heatwave | 28.08 | +2.49 % | **+6.09 pp** | 70.3 % |
 | exam-day | 27.23 | +0.77 % | **+4.67 pp** | 75.2 % |
 
-Baseline C2 (occupancy rule) is the energy winner — 1.6 % cheaper on a weekday,
-2.0 % on a heatwave — but it drops comfort by 1.5–4.0 pp to get there.
+Baseline C2 (occupancy rule) is the energy winner â€” 1.6 % cheaper on a weekday,
+2.0 % on a heatwave â€” but it drops comfort by 1.5â€“4.0 pp to get there.
 
 Forecaster quality (walk-forward, held-out, no leakage):
 
@@ -75,11 +75,11 @@ Rooms: `classroom_A`, `classroom_B`, `office`, `lab`.
 |---|---|---|---|
 | C1 | Fixed schedule | no | Occupancy hours pre-programmed, runs regardless |
 | C2 | Occupancy rule | no | Reacts to *current* occupancy |
-| C3 | Setback | no | Wider deadband when unoccupied — the strong baseline |
+| C3 | Setback | no | Wider deadband when unoccupied â€” the strong baseline |
 | C4 | Predictive | **yes** | Pre-heats/cools before predicted arrival, relaxes early on predicted departure |
 
 C4 is also run in two ablation modes: `c4-as-c3` (forecast disabled, must match
-C3 exactly — a correctness check) and `c4-with` (full forecast + carbon signal).
+C3 exactly â€” a correctness check) and `c4-with` (full forecast + carbon signal).
 
 ---
 
@@ -88,6 +88,7 @@ C3 exactly — a correctness check) and `c4-with` (full forecast + carbon signal
 ```
 sim/        1R1C thermal model, occupancy, weather, grid carbon, metrics, run CLI
 iot/        MQTT topics contract, paho client, ESP32 node model, telemetry bridge
+iot/wokwi/  Virtual ESP32 project (firmware + diagram.json + wiring notes)
 ctrl/       C1-C3 baselines, C4 predictive policy, evaluation harness
 ml/         walk-forward forecasting, HistGB/RF bake-off, LSTM, UCI adapter
 eval/       experiment matrix, ablations, sensitivity, report + figures G1-G7
@@ -95,7 +96,7 @@ dashboard/  Streamlit viewer (7 tabs incl. Plotly 3D building twin)
 viz/        Mesh3d building twin
 scripts/    live MQTT demo, dashboard screenshot capture, scenario spot-checks
 docs/       MQTT protocol notes, ThingSpeak/Blynk cloud guide
-tests/      129 tests
+tests/      133 tests
 ```
 
 ---
@@ -104,7 +105,7 @@ tests/      129 tests
 
 Verified on **Python 3.14.6** with the pins in `requirements.txt`
 (`tensorflow==2.22.0-rc0`). Machines that must train the LSTM on a stable TF
-release can use 3.12.x instead — nothing else depends on it, and `sim` prints a
+release can use 3.12.x instead â€” nothing else depends on it, and `sim` prints a
 cosmetic warning on non-3.12 interpreters.
 
 ```bash
@@ -153,11 +154,11 @@ Pre-demo run order: [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md).
 
 ## Limitations / honest findings
 
-- **No energy win.** C4 is 0.3–2.5 % *more* expensive than C3. Its value is
+- **No energy win.** C4 is 0.3â€“2.5 % *more* expensive than C3. Its value is
   comfort, not savings. Any claim of beating fixed schedules on energy is not
   supported by the data.
 - **No load shifting.** The carbon signal raised peak-hour share from 0.071 to
-  0.080 instead of lowering it — the grid model's off-peak carbon advantage is
+  0.080 instead of lowering it â€” the grid model's off-peak carbon advantage is
   too small to act on. Documented in [`SHIFTING-FINDING.md`](SHIFTING-FINDING.md).
 - **Synthetic building.** A 1R1C lumped model, not EnergyPlus. Absolute kWh
   values are illustrative; controller *rankings* are the transferable result.
@@ -172,7 +173,7 @@ Pre-demo run order: [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md).
 |---|---|
 | [`REPORT.md`](REPORT.md) | Full write-up: method, scenarios, all figures |
 | [`explainer.txt`](explainer.txt) | Plain-language explainer: IoT terms, file map, viva numbers |
-| [`REPRODUCE.md`](REPRODUCE.md) | Fresh clone → every figure and table |
+| [`REPRODUCE.md`](REPRODUCE.md) | Fresh clone â†’ every figure and table |
 | [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md) | 15-minute live demo run order + fallbacks |
 | [`SHIFTING-FINDING.md`](SHIFTING-FINDING.md) | Why carbon-aware shifting failed |
 | [`docs/protocols.md`](docs/protocols.md) | MQTT topic contract, QoS, last-will |
@@ -184,4 +185,4 @@ Pre-demo run order: [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md).
 
 ## License
 
-Academic coursework — no license granted for reuse.
+Academic coursework â€” no license granted for reuse.
