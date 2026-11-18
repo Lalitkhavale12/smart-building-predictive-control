@@ -168,11 +168,14 @@ Pre-demo run order: [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md).
 | File | Contents |
 |---|---|
 | [`REPORT.md`](REPORT.md) | Full write-up: method, scenarios, all figures |
+| [`explainer.txt`](explainer.txt) | Plain-language explainer: IoT terms, file map, viva numbers |
 | [`REPRODUCE.md`](REPRODUCE.md) | Fresh clone → every figure and table |
 | [`DEMO-CHECKLIST.md`](DEMO-CHECKLIST.md) | 15-minute live demo run order + fallbacks |
 | [`SHIFTING-FINDING.md`](SHIFTING-FINDING.md) | Why carbon-aware shifting failed |
 | [`docs/protocols.md`](docs/protocols.md) | MQTT topic contract, QoS, last-will |
 | [`docs/thingspeak-guide.md`](docs/thingspeak-guide.md) | Optional cloud dashboard (manual, needs account) |
+| [`docs/PHASE-RECALIBRATION-A.md`](docs/PHASE-RECALIBRATION-A.md) | The thermal-model bug and the fix |
+| [`docs/PHASE-RECALIBRATION-B.md`](docs/PHASE-RECALIBRATION-B.md) | Re-measured results after the fix |
 
 ---
 
