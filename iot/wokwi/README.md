@@ -36,16 +36,39 @@ presence, last-will — while the sensing stays simulated. See `README.md`
    `#include` lines because both are in its registry, so the file only pins
    versions. If the part IDs differ in your Wokwi version, wire the DHT22 once
    in the GUI and let Wokwi rewrite `diagram.json`.
-4. Press **F1 → "Enable Private Wokwi IoT Gateway"**. Without this,
-   `host.wokwi.internal` does not resolve to your laptop and the board cannot
-   reach the local broker.
-5. Start the broker from the repo root, with output so you can watch traffic:
+4. Point the board at a broker. **The Private IoT Gateway is a Wokwi Club
+   (paid) feature**, so on the free tier pick one of the two paths below.
+
+   **4a. Free path — public broker (no gateway).** Wokwi simulations have
+   outbound internet, so edit one line in your Wokwi copy:
+
+   ```c
+   #define MQTT_HOST "test.mosquitto.org"   // was "host.wokwi.internal"
+   ```
+
+   `MQTT_HOST` is not pinned by `tests/test_sketch_contract.py` (only the topic
+   literals are), so this edit cannot break the contract. Then watch from the
+   laptop — `test.mosquitto.org` is shared, so expect other people's traffic on
+   the same bus:
+
+   ```powershell
+   & "C:\Program Files\mosquitto\mosquitto_sub.exe" -h test.mosquitto.org -t "building/#" -v
+   ```
+
+   If the public broker is unreachable or rate-limited, try
+   `broker.hivemq.com` or `broker.emqx.io` the same way.
+
+   **4b. Paid path — local broker (Club).** Press **F1 → "Enable Private Wokwi
+   IoT Gateway"**, then start the local broker from the repo root with output
+   so you can watch traffic:
 
    ```powershell
    & "C:\Program Files\mosquitto\mosquitto.exe" -c mosquitto.conf -v
    ```
 
-6. Press ▶ in Wokwi.
+   This keeps the traffic on localhost and is the only variant that proves the
+   board talks to *your* broker.
+5. Press ▶ in Wokwi.
 
 ## Expected output
 
