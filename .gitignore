@@ -4,6 +4,7 @@ results/
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
 .venv/
 venv/
 *.egg-info/
